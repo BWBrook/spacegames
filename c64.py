@@ -22,6 +22,7 @@ from __future__ import annotations
 import contextlib
 import os
 import random
+import shutil
 import sys
 from collections import defaultdict
 from typing import Iterator, List, Optional
@@ -35,11 +36,38 @@ _ESC_HOME = "\x1b[H"                # ANSI "home cursor" sequence.
 _CLEAR_CMD = "cls" if os.name == "nt" else "clear"
 
 # ──────────────────────────────────────────────────────────────────────────────
+_COLS = shutil.get_terminal_size(fallback=(80, 25)).columns
+
+def _clear_console_line() -> None:
+    """
+    Erase the line *above* the current cursor (where the user just typed).
+    Works on any terminal that supports basic ANSI, including Windows
+    after the VT flag patch above.  Fallback: space‑fill.
+    """
+    try:
+        sys.stdout.write("\x1b[1A")      # cursor up one line
+        sys.stdout.write("\r\x1b[K")     # erase to EOL
+    except Exception:
+        sys.stdout.write("\r" + " " * _COLS + "\r")
+    finally:
+        sys.stdout.flush()
+
+# ──────────────────────────────────────────────────────────────────────────────
 # Platform abstraction (keyboard + raw terminal)
 # ──────────────────────────────────────────────────────────────────────────────
 if os.name == "nt":
-    import msvcrt  # type: ignore
+    # ----------------------------------------------------------------------
+    # Ensure ANSI escape sequences work on Windows 10+ consoles
+    # ----------------------------------------------------------------------
+    import ctypes
+    kernel32 = ctypes.windll.kernel32
+    h_stdout = kernel32.GetStdHandle(-11)          # STD_OUTPUT_HANDLE
+    mode = ctypes.c_ulong()
+    if kernel32.GetConsoleMode(h_stdout, ctypes.byref(mode)):
+        ENABLE_VT = 0x0004                         # VT processing flag
+        kernel32.SetConsoleMode(h_stdout, mode.value | ENABLE_VT)
 
+    import msvcrt  # type: ignore
     def _get_key() -> Optional[str]:
         """Return a single pressed key (non‑blocking) or ``None``."""
         if msvcrt.kbhit():                                   # type: ignore[attr-defined]
@@ -120,7 +148,9 @@ class Screen:
 class C64:
     """A “good‑enough” Commodore‑64 façade for running 1980s BASIC listings."""
 
-    def __init__(self, seed: int = 42) -> None:
+    def __init__(self, seed: Optional[int] = None) -> None:
+        # None ⇒ non-deterministic RNG (system seed);
+        # int  ⇒ deterministic, test-friendly
         self.mem: defaultdict[int, int] = defaultdict(int)
         self.screen = Screen()
         self.rng = random.Random(seed)
@@ -162,6 +192,9 @@ class C64:
     def refresh(self) -> None:
         """Flush the off‑screen buffer to the terminal."""
         self.screen.render()
+
+    # utility re-export so game modules can call it
+    clear_console_line = staticmethod(_clear_console_line)
 
     # Optional: expose raw_tty for power users -------------------------------
     raw_tty = staticmethod(_raw_tty)  # e.g. `with C64.raw_tty(): ...`
