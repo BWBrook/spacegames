@@ -19,11 +19,16 @@ def _expr(e: str) -> str:
     """Token tweaks inside expressions."""
     e = re.sub(r'\bRND\b', 'rng.random()', e, flags=re.I)
     e = re.sub(r'\bINT\s*\(', 'int(', e, flags=re.I)
+    e = re.sub(r'\bATN\s*\(', 'math.atan(', e, flags=re.I)
+    e = re.sub(r'\bSQR\s*\(', 'math.sqrt(', e, flags=re.I)
+    e = re.sub(r'\bABS\s*\(', 'abs(', e, flags=re.I)    
     return e
 
 def _condition(cond: str) -> str:
     """BASIC uses single ‘=’ for equality → ‘==’."""
     cond = _expr(cond)
+    cond = re.sub(r'\bAND\b', 'and', cond, flags=re.I)
+    cond = re.sub(r'\bOR\b',  'or',  cond, flags=re.I)
     return re.sub(r'(?<![<>=])=(?!=)', '==', cond)
 
 def _py_print(payload: str) -> str:
@@ -32,7 +37,10 @@ def _py_print(payload: str) -> str:
         input:  '"HELLO";A'
         output: 'print("HELLO", A)'
     """
-    parts = [p.strip() for p in re.split(r'\s*;\s*', payload.rstrip(';'))]
+    payload = payload.rstrip(';')
+    if not payload:
+        return "print()"
+    parts = [p.strip() for p in re.split(r'\s*;\s*', payload)]
     return f'print({", ".join(parts)})'
 
 # ───────────────────────────────────────────────────────── compiler ──
@@ -79,6 +87,7 @@ def compile_basic(source: str) -> str:
         # -------------------------------- FOR / NEXT
         elif m := FOR_RE.match(code):
             v, lo, hi = m.groups()
+            emitted.append(IND*indent + f"{v} = 0  # pre-declare for linters")
             py = f"for {v} in range({_expr(lo)}, {_expr(hi)} + 1):"
             emitted.append(IND*indent + py)
             indent += 1
