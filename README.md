@@ -32,14 +32,16 @@ spacegames/
 │
 ├─ basic/            # Original listings (.bas) exactly as typed in 1982
 │   ├─ starship_takeoff.bas
-│   └─ intergalactic_games.bas
+│   ├─ intergalactic_games.bas
+│   └─ evil_alien.bas
 │
 ├─ spacegames/       # Installable package
 │   ├─ c64.py        # 40×25 text-mode facade
 │   ├─ basic2py.py   # cheap translator helper (ASCII-safe)
 │   ├─ games/        # hand-polished Python ports
 │   │   ├─ starship_takeoff.py
-│   │   └─ intergalactic_games.py
+│   │   ├─ intergalactic_games.py
+│   │   └─ evil_alien.py
 │   └─ tests/        # pytest stubs and golden screen hashes
 │
 ├─ docs/             # Book transcript, design notes
@@ -66,7 +68,7 @@ spacegames/
 | -------------------------------------- | ------------------------ | ------ | ---------------------- |
 | 1. Starship Take-off                   | `starship_takeoff.py`    | Done   | input line clean-up    |
 | 2. Intergalactic Games                 | `intergalactic_games.py` | Done   | bonus carry-over added |
-| 3. Evil Alien                          | *pending*                | TODO   |                        |
+| 3. Evil Alien                          | `evil_alien.py`          | Done   |                        |
 | 4. Beat the Bug Eyes                   | *pending*                | TODO   | needs GOSUB support    |
 | 5. Moonlander                          | *pending*                | TODO   | arrays, float maths    |
 | 6. Monsters of Galacticon              | *pending*                | TODO   | DIM string array       |
