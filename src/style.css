@@ -1,0 +1,66 @@
+:root {
+  font-family: 'Space Mono', 'IBM Plex Mono', SFMono-Regular, Consolas, 'Liberation Mono', monospace;
+  color: #d6f5ff;
+  background-color: #020610;
+  line-height: 1.4;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #071327 0%, #020610 70%);
+  color: inherit;
+}
+
+canvas#stage {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+}
+
+#gate {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 6, 16, 0.95);
+  color: #e5f9ff;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.9rem;
+}
+
+#gate.hidden {
+  display: none;
+}
+
+button {
+  border: 1px solid #3d85b0;
+  border-radius: 999px;
+  padding: 0.65rem 2rem;
+  background: linear-gradient(120deg, #0f2e4a, #144361);
+  color: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  cursor: pointer;
+  transition: border-color 180ms ease, transform 180ms ease;
+}
+
+button:hover {
+  border-color: #6dd6ff;
+  transform: translateY(-1px);
+}
+
+button:focus-visible {
+  outline: 2px solid #6dd6ff;
+  outline-offset: 4px;
+}
