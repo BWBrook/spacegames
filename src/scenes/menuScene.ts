@@ -5,6 +5,8 @@ import type { GameManifestEntry } from '../games/types';
 export function createMenuScene(ctx: SceneContext): Scene {
   let selected = 0;
   let pulse = 0;
+  let modePickerActive = false;
+  let modeIndex: 0 | 1 = 0;
 
   function moveSelection(delta: number) {
     const { manifest } = ctx;
@@ -14,7 +16,17 @@ export function createMenuScene(ctx: SceneContext): Scene {
 
   function launchGame(entry: GameManifestEntry | undefined) {
     if (!entry) return;
-    ctx.goto('gameplay', { game: entry });
+    if (!modePickerActive) {
+      modePickerActive = true;
+      modeIndex = 0;
+      return;
+    }
+    const mode = modeIndex === 0 ? 'modern' : 'retro';
+    if (mode === 'retro' && !entry.retro) {
+      return;
+    }
+    ctx.goto('gameplay', { game: entry, mode });
+    modePickerActive = false;
   }
 
   return {
@@ -22,6 +34,17 @@ export function createMenuScene(ctx: SceneContext): Scene {
       pulse = (pulse + dt) % 1;
       const { manifest, input } = ctx;
       if (!manifest.length) return;
+      if (modePickerActive) {
+        if (input.consumePress('ArrowLeft') || input.consumePress('ArrowRight')) {
+          modeIndex = (modeIndex === 0 ? 1 : 0);
+        }
+        if (input.consumePress('Escape')) {
+          modePickerActive = false;
+        } else if (input.consumePress('Enter') || input.consumePress(' ')) {
+          launchGame(manifest[selected]);
+        }
+        return;
+      }
       if (input.consumePress('ArrowDown') || input.consumePress('s')) moveSelection(1);
       if (input.consumePress('ArrowUp') || input.consumePress('w')) moveSelection(-1);
       if (input.consumePress('Enter') || input.consumePress(' ')) launchGame(manifest[selected]);
@@ -99,7 +122,11 @@ export function createMenuScene(ctx: SceneContext): Scene {
       g.fillStyle = '#6bdcff';
       g.font = '14px "Space Mono", monospace';
       g.textAlign = 'right';
-      g.fillText('Enter ↵ to launch · Arrow Keys to navigate · Esc to quit game', stage.width - 48, stage.height - 32);
+      g.fillText('Enter ↵ to choose mode · Arrow Keys to navigate · Esc to quit game', stage.width - 48, stage.height - 32);
+      if (modePickerActive) {
+        const currentEntry = ctx.manifest[selected];
+        if (currentEntry) renderModePicker(g, stage, currentEntry, modeIndex);
+      }
       g.restore();
     },
   };
@@ -127,4 +154,47 @@ function wrapText(
     }
   });
   if (line) g.fillText(line.trimEnd(), x, y + offsetY);
+}
+
+function renderModePicker(
+  g: CanvasRenderingContext2D,
+  stage: { width: number; height: number },
+  entry: GameManifestEntry,
+  modeIndex: number,
+) {
+  const options: Array<{ label: string; detail: string; available: boolean }> = [
+    { label: 'Reimagined', detail: 'Modern canvas remake', available: true },
+    { label: 'Retro BASIC', detail: entry.retro ? 'Text-mode original' : 'Unavailable for this game', available: Boolean(entry.retro) },
+  ];
+  const width = Math.min(520, stage.width * 0.8);
+  const height = 150;
+  const x = (stage.width - width) / 2;
+  const y = stage.height * 0.55;
+  g.save();
+  g.fillStyle = 'rgba(2, 6, 12, 0.94)';
+  g.fillRect(x, y, width, height);
+  g.strokeStyle = '#6bdcff';
+  g.lineWidth = 2;
+  g.strokeRect(x, y, width, height);
+  const optionWidth = width / options.length;
+  options.forEach((opt, idx) => {
+    const ox = x + idx * optionWidth;
+    if (idx === modeIndex) {
+      g.fillStyle = 'rgba(14, 44, 72, 0.8)';
+      g.fillRect(ox + 8, y + 40, optionWidth - 16, 90);
+      g.strokeStyle = '#8cf1ff';
+      g.strokeRect(ox + 8, y + 40, optionWidth - 16, 90);
+    }
+    g.fillStyle = opt.available ? '#e6fbff' : '#6b7a8f';
+    g.font = '20px "Space Mono", monospace';
+    g.textAlign = 'center';
+    g.fillText(opt.label, ox + optionWidth / 2, y + 70);
+    g.font = '14px "Space Mono", monospace';
+    g.fillText(opt.detail, ox + optionWidth / 2, y + 100);
+  });
+  g.fillStyle = '#7de3ff';
+  g.textAlign = 'center';
+  g.font = '14px "Space Mono", monospace';
+  g.fillText('Select mode with ← →, Enter to confirm, Esc to cancel', stage.width / 2, y + height + 20);
+  g.restore();
 }

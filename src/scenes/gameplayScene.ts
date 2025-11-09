@@ -1,34 +1,59 @@
 import type { Scene, SceneContext } from '../core/sceneManager';
-import type { GameInstance, GameManifestEntry, GameModule } from '../games/types';
+import type {
+  GameInstance,
+  GameManifestEntry,
+  GameModule,
+  GameMode,
+  RetroInstance,
+  RetroModule,
+} from '../games/types';
 
 interface GameplayPayload {
   game: GameManifestEntry;
+  mode?: GameMode;
 }
 
 export function createGameplayScene(ctx: SceneContext): Scene {
   let loading = false;
   let error: string | null = null;
   let entry: GameManifestEntry | null = null;
-  let game: GameInstance | null = null;
+  let modernGame: GameInstance | null = null;
+  let retroGame: RetroInstance | null = null;
+  let currentMode: GameMode = 'modern';
   let requestId = 0;
 
-  async function load(entryToLoad: GameManifestEntry) {
+  async function load(entryToLoad: GameManifestEntry, mode: GameMode) {
     loading = true;
     error = null;
-    game?.exit?.();
-    game = null;
+    modernGame?.exit?.();
+    retroGame?.exit?.();
+    modernGame = null;
+    retroGame = null;
     const token = ++requestId;
     try {
-      const module: GameModule = await entryToLoad.loader();
-      if (token !== requestId) return;
-      const instance = module.createGame({
-        stage: ctx.stage,
-        input: ctx.input,
-        audio: ctx.audio,
-        manifest: entryToLoad,
-      });
-      game = instance;
-      instance.enter?.();
+      if (mode === 'retro') {
+        if (!entryToLoad.retro) throw new Error('Retro mode not available for this game.');
+        const module: RetroModule = await entryToLoad.retro.loader();
+        if (token !== requestId) return;
+        const instance = module.createRetroGame({
+          stage: ctx.stage,
+          audio: ctx.audio,
+          manifest: entryToLoad,
+        });
+        retroGame = instance;
+        instance.enter?.();
+      } else {
+        const module: GameModule = await entryToLoad.loader();
+        if (token !== requestId) return;
+        const instance = module.createGame({
+          stage: ctx.stage,
+          input: ctx.input,
+          audio: ctx.audio,
+          manifest: entryToLoad,
+        });
+        modernGame = instance;
+        instance.enter?.();
+      }
     } catch (err) {
       if (token === requestId) {
         error = err instanceof Error ? err.message : 'Unknown error while loading game';
@@ -46,21 +71,22 @@ export function createGameplayScene(ctx: SceneContext): Scene {
         return;
       }
       entry = next;
-      load(next);
+      currentMode = payload?.mode ?? 'modern';
+      load(next, currentMode);
     },
     update(dt: number) {
       if (ctx.input.consumePress('Escape')) {
         ctx.goto('menu');
         return;
       }
-      if (game) {
-        game.update(dt);
-      }
+      if (currentMode === 'retro') retroGame?.update(dt);
+      else modernGame?.update(dt);
     },
     render() {
       const { stage } = ctx;
-      if (game) {
-        game.render();
+      if (currentMode === 'retro' ? retroGame : modernGame) {
+        if (currentMode === 'retro') retroGame?.render();
+        else modernGame?.render();
       } else {
         stage.clear('#060b16');
         const g = stage.ctx;
@@ -86,7 +112,8 @@ export function createGameplayScene(ctx: SceneContext): Scene {
       g.fillStyle = '#c9efff';
       g.font = '700 18px "Space Mono", monospace';
       g.textAlign = 'left';
-      const title = entry ? `${entry.title} (${entry.year})` : '—';
+      const modeLabel = currentMode === 'retro' ? 'Retro' : 'Reimagined';
+      const title = entry ? `${entry.title} (${entry.year}) · ${modeLabel}` : '—';
       g.fillText(title, 16, 30);
       g.textAlign = 'right';
       g.font = '14px "Space Mono", monospace';
@@ -95,8 +122,10 @@ export function createGameplayScene(ctx: SceneContext): Scene {
       g.restore();
     },
     exit() {
-      game?.exit?.();
-      game = null;
+      modernGame?.exit?.();
+      retroGame?.exit?.();
+      modernGame = null;
+      retroGame = null;
       entry = null;
     },
   };

@@ -8,6 +8,7 @@
 - **Telemetry Noise** – Gravity and wind are still there, but displayed values drift and spike; investing in better prep reduces the spread, mirroring the BASIC game's guesswork.
 - **Events Deck** – Solar flares, debris clouds, reactor spikes, and alien interceptors are scheduled along a timeline to keep runs replayable. Effects are short, punchy, and always legible on the HUD.
 - **Heat vs. Integrity** – Overshooting thrust raises heat; heat bleeds into hull damage if unmanaged. Venting reduces velocity, creating the push/pull we wanted from "too high / too low" feedback loops.
+- **Retro Mode** – Press Enter on the anthology menu to pick between the modern canvas build and a terminal-style BASIC recreation. The retro version mirrors the original flow (10 guesses, `R = G × W`) with a text buffer and keyboard input, so players can compare the old puzzle verbatim.
 
 ## Pilot Manual
 - **Goal**: Reach orbital altitude (120,000 m) without exceeding 140 heat or 0 integrity. Scoring is based on how close your true thrust stayed to the secret `R` target.

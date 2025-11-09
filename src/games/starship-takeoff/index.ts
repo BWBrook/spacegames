@@ -10,6 +10,7 @@ import {
   transitionPhase,
 } from './state';
 import type { StarshipState, Particle } from './types';
+import { audioCues, type AudioCueId } from '../../assets/audio';
 
 interface PointerState {
   active: boolean;
@@ -25,10 +26,15 @@ interface StarSprite {
   size: number;
 }
 
-export const createGame: GameFactory = ({ stage, input, manifest: entry }) => {
+export const createGame: GameFactory = ({ stage, input, manifest: entry, audio }) => {
   const state = createStarshipState();
   const pointer: PointerState = { active: false, mode: null, x: 0, y: 0 };
   const stars: StarSprite[] = createStars(stage.width, stage.height);
+  const audioBuffers = new Map<AudioCueId, AudioBuffer>();
+  const activeEventAudio = new Set<string>();
+  let ambientSource: AudioBufferSourceNode | null = null;
+  let warningCooldown = 0;
+  let ventTimer = 0;
 
   const canvas = stage.canvas;
 
@@ -61,13 +67,222 @@ export const createGame: GameFactory = ({ stage, input, manifest: entry }) => {
   canvas.addEventListener('pointerup', pointerUp);
   canvas.addEventListener('pointerleave', pointerUp);
 
+  async function loadCue(id: AudioCueId) {
+    const buffer = audioBuffers.get(id);
+    if (buffer) return buffer;
+    try {
+      await audio.unlock();
+      const loaded = await audio.load(audioCues[id]);
+      audioBuffers.set(id, loaded);
+      return loaded;
+    } catch (err) {
+      console.warn(`Failed to load audio cue ${id}`, err);
+      return null;
+    }
+  }
+
+  async function ensureAmbientLoop() {
+    if (ambientSource) return;
+    const buffer = await loadCue('starship/prep-ambience');
+    if (!buffer || !audio.ctx) return;
+    stopAmbientLoop();
+    const source = audio.ctx.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+    const gain = audio.ctx.createGain();
+    gain.gain.value = 0.22;
+    source.connect(gain).connect(audio.ctx.destination);
+    source.start();
+    ambientSource = source;
+  }
+
+  function stopAmbientLoop() {
+    if (ambientSource) {
+      try {
+        ambientSource.stop();
+      } catch {
+        /* already stopped */
+      }
+      ambientSource.disconnect();
+    }
+    ambientSource = null;
+  }
+
+  function playCue(id: AudioCueId, gain = 0.5) {
+    loadCue(id).then(buffer => {
+      if (!buffer) return;
+      try {
+        audio.play(buffer, 0, gain);
+      } catch (err) {
+        console.warn('Audio playback failed', err);
+      }
+    });
+  }
+
+  function triggerWarning(force = false) {
+    if (!force && warningCooldown > 0) return;
+    warningCooldown = 1.2;
+    playCue('starship/warning', 0.45);
+  }
+
+  function handleEventAudio(current: StarshipState) {
+    for (const evt of current.ascent.events) {
+      if (evt.status === 'active' && !activeEventAudio.has(evt.id)) {
+        activeEventAudio.add(evt.id);
+        triggerWarning(true);
+      } else if (evt.status === 'resolved' && activeEventAudio.has(evt.id)) {
+        activeEventAudio.delete(evt.id);
+      }
+    }
+  }
+
+  const updatePrep = (
+    starship: StarshipState,
+    controls: { isDown(key: string): boolean; consumePress(key: string): boolean },
+    dt: number,
+  ) => {
+    const adjustment = starship.config.thrustAdjustmentPerSecond * dt;
+    if (controls.isDown('ArrowLeft') || controls.isDown('a')) starship.controls.baseThrust = clamp01(starship.controls.baseThrust - adjustment);
+    if (controls.isDown('ArrowRight') || controls.isDown('d')) starship.controls.baseThrust = clamp01(starship.controls.baseThrust + adjustment);
+    if (controls.isDown('ArrowUp') || controls.isDown('w')) starship.controls.vectorBias = clampSigned(starship.controls.vectorBias + adjustment * 0.5);
+    if (controls.isDown('ArrowDown') || controls.isDown('s')) starship.controls.vectorBias = clampSigned(starship.controls.vectorBias - adjustment * 0.5);
+
+    if (starship.phaseElapsed >= starship.config.prepDuration || controls.consumePress('Enter')) {
+      starship.statusMessage = 'Hit Enter with the cursor centered to capture the ignition window.';
+      transitionPhase(starship, 'commit');
+    }
+  };
+
+  const updateCommit = (
+    starship: StarshipState,
+    controls: { consumePress(key: string): boolean },
+    dt: number,
+  ) => {
+    const speed = starship.config.commitCursorSpeed;
+    starship.commit.cursor += starship.commit.direction * speed * dt;
+    if (starship.commit.cursor >= 1) {
+      starship.commit.cursor = 1;
+      starship.commit.direction = -1;
+    }
+    if (starship.commit.cursor <= 0) {
+      starship.commit.cursor = 0;
+      starship.commit.direction = 1;
+    }
+
+    if (controls.consumePress('Enter') || controls.consumePress(' ')) {
+      const delta = Math.abs(starship.commit.cursor - 0.5);
+      starship.commit.score = Math.max(0, 1 - delta * 2);
+      starship.commit.resolved = true;
+      starship.statusMessage = 'Engines ignited—ride the burn and manage heat!';
+      playCue('starship/ignition', 0.75);
+      transitionPhase(starship, 'ascent');
+      starship.phaseElapsed = 0;
+      return;
+    }
+
+    if (starship.phaseElapsed >= starship.config.commitWindow) {
+      starship.commit.score = Math.max(0.2, 1 - Math.abs(starship.commit.cursor - 0.5));
+      starship.commit.resolved = true;
+      starship.statusMessage = 'Autosequencer forced ignition—ride carefully!';
+      playCue('starship/ignition', 0.65);
+      transitionPhase(starship, 'ascent');
+      starship.phaseElapsed = 0;
+    }
+  };
+
+  const updateAscent = (starship: StarshipState, controls: { isDown(key: string): boolean }, dt: number) => {
+    const activeEvent = starship.ascent.events.some(evt => evt.status === 'active');
+    const thrustAdjust = starship.config.thrustAdjustmentPerSecond * dt * 1.6;
+    if (controls.isDown('ArrowUp') || controls.isDown('w')) starship.ascent.thrust = clamp01(starship.ascent.thrust + thrustAdjust);
+    if (controls.isDown('ArrowDown') || controls.isDown('s')) starship.ascent.thrust = clamp01(starship.ascent.thrust - thrustAdjust);
+
+    const venting = controls.isDown(' ') || controls.isDown('Shift');
+
+    const baseThrust = computeBaseThrust(starship);
+    const commitBonus = 0.85 + starship.commit.score * 0.35;
+    const liveMod = 0.7 + starship.ascent.thrust * 0.6;
+    const vectorPenalty = 1 - Math.abs(starship.controls.vectorBias) * 0.08;
+    const fuelBonus = 1 + starship.controls.fuelMix * 0.05;
+    const actualThrust = baseThrust * commitBonus * liveMod * vectorPenalty * fuelBonus;
+    starship.ascent.lastThrust = actualThrust;
+
+    const gravityPull = 38 + starship.telemetry.trueGravity * 1.5;
+    const thrustAccel = actualThrust * 0.06;
+    const acceleration = thrustAccel - gravityPull;
+    starship.ascent.velocity += acceleration * dt;
+    starship.ascent.altitude += starship.ascent.velocity * dt;
+
+    const heatGain = (actualThrust / 10) * dt;
+    const heatLoss = (starship.config.heatCoolRate + (venting ? starship.config.heatVentRate : 0)) * dt;
+    starship.ascent.heat += heatGain - heatLoss;
+    starship.ascent.heat = Math.max(0, starship.ascent.heat);
+
+    if (venting) {
+      starship.statusMessage = 'Venting heat; climb efficiency reduced.';
+      starship.ascent.velocity -= 15 * dt;
+      if (ventTimer <= 0) {
+        playCue('starship/vent', 0.55);
+        ventTimer = 1.25;
+      }
+    } else if (!activeEvent) {
+      starship.statusMessage = 'Balance thrust vs. heat; watch hull integrity.';
+    }
+
+    if (starship.ascent.heat > 120) {
+      starship.ascent.integrity = Math.max(0, starship.ascent.integrity - 18 * dt);
+      triggerWarning();
+    }
+
+    if (starship.ascent.altitude < 0) {
+      starship.ascent.altitude = 0;
+      starship.ascent.velocity = Math.max(0, starship.ascent.velocity);
+    }
+
+    stepEvents(starship, starship.phaseElapsed);
+    handleEventAudio(starship);
+
+    spawnExhaust(starship, dt);
+    maybeSpawnDebris(starship, dt);
+
+    const success = starship.ascent.altitude >= starship.ascent.targetAltitude;
+    const failure = starship.ascent.integrity <= 0 || starship.ascent.heat >= 140;
+
+    if (success || failure) {
+      const accuracy = computeOptimality(starship, actualThrust);
+      starship.debrief = {
+        outcome: success ? 'success' : 'failure',
+        accuracy,
+        summary: success ? successSummary(accuracy) : failureSummary(starship),
+        rewards: Math.round(accuracy * 240),
+      };
+      playCue(success ? 'starship/success' : 'starship/failure', success ? 0.65 : 0.55);
+      transitionPhase(starship, 'debrief');
+      stopAmbientLoop();
+    }
+  };
+
+  const updateDebrief = (
+    starship: StarshipState,
+    controls: { consumePress(key: string): boolean },
+    _dt: number,
+  ) => {
+    if (starship.phaseElapsed < 1) return;
+    if (controls.consumePress('Enter') || controls.consumePress(' ')) {
+      resetForRetry(starship);
+      ensureAmbientLoop();
+    }
+  };
+
   const game = {
     enter() {
       transitionPhase(state, 'prep');
+      ensureAmbientLoop();
     },
     update(dt: number) {
       state.elapsed += dt;
       state.phaseElapsed += dt;
+      warningCooldown = Math.max(0, warningCooldown - dt);
+      ventTimer = Math.max(0, ventTimer - dt);
       refreshTelemetry(state, dt);
       updateStars(stars, dt, stage);
       switch (state.phase) {
@@ -111,125 +326,12 @@ export const createGame: GameFactory = ({ stage, input, manifest: entry }) => {
       canvas.removeEventListener('pointermove', pointerMove);
       canvas.removeEventListener('pointerup', pointerUp);
       canvas.removeEventListener('pointerleave', pointerUp);
+      stopAmbientLoop();
     },
   };
 
   return game;
 };
-
-function updatePrep(state: StarshipState, input: { isDown(key: string): boolean; consumePress(key: string): boolean }, dt: number) {
-  const adjustment = state.config.thrustAdjustmentPerSecond * dt;
-  if (input.isDown('ArrowLeft') || input.isDown('a')) state.controls.baseThrust = clamp01(state.controls.baseThrust - adjustment);
-  if (input.isDown('ArrowRight') || input.isDown('d')) state.controls.baseThrust = clamp01(state.controls.baseThrust + adjustment);
-  if (input.isDown('ArrowUp') || input.isDown('w')) state.controls.vectorBias = clampSigned(state.controls.vectorBias + adjustment * 0.5);
-  if (input.isDown('ArrowDown') || input.isDown('s')) state.controls.vectorBias = clampSigned(state.controls.vectorBias - adjustment * 0.5);
-
-  if (state.phaseElapsed >= state.config.prepDuration || input.consumePress('Enter')) {
-    state.statusMessage = 'Hit Enter with the cursor centered to capture the ignition window.';
-    transitionPhase(state, 'commit');
-  }
-}
-
-function updateCommit(state: StarshipState, input: { consumePress(key: string): boolean }, dt: number) {
-  const speed = state.config.commitCursorSpeed;
-  state.commit.cursor += state.commit.direction * speed * dt;
-  if (state.commit.cursor >= 1) {
-    state.commit.cursor = 1;
-    state.commit.direction = -1;
-  }
-  if (state.commit.cursor <= 0) {
-    state.commit.cursor = 0;
-    state.commit.direction = 1;
-  }
-
-  if (input.consumePress('Enter') || input.consumePress(' ')) {
-    const delta = Math.abs(state.commit.cursor - 0.5);
-    state.commit.score = Math.max(0, 1 - delta * 2);
-    state.commit.resolved = true;
-    state.statusMessage = 'Engines ignited—ride the burn and manage heat!';
-    transitionPhase(state, 'ascent');
-    state.phaseElapsed = 0;
-    return;
-  }
-
-  if (state.phaseElapsed >= state.config.commitWindow) {
-    state.commit.score = Math.max(0.2, 1 - Math.abs(state.commit.cursor - 0.5));
-    state.commit.resolved = true;
-    state.statusMessage = 'Autosequencer forced ignition—ride carefully!';
-    transitionPhase(state, 'ascent');
-    state.phaseElapsed = 0;
-  }
-}
-
-function updateAscent(state: StarshipState, input: { isDown(key: string): boolean }, dt: number) {
-  const activeEvent = state.ascent.events.some(evt => evt.status === 'active');
-  const thrustAdjust = state.config.thrustAdjustmentPerSecond * dt * 1.6;
-  if (input.isDown('ArrowUp') || input.isDown('w')) state.ascent.thrust = clamp01(state.ascent.thrust + thrustAdjust);
-  if (input.isDown('ArrowDown') || input.isDown('s')) state.ascent.thrust = clamp01(state.ascent.thrust - thrustAdjust);
-
-  const venting = input.isDown(' ') || input.isDown('Shift');
-
-  const baseThrust = computeBaseThrust(state);
-  const commitBonus = 0.85 + state.commit.score * 0.35;
-  const liveMod = 0.7 + state.ascent.thrust * 0.6;
-  const vectorPenalty = 1 - Math.abs(state.controls.vectorBias) * 0.08;
-  const fuelBonus = 1 + state.controls.fuelMix * 0.05;
-  const actualThrust = baseThrust * commitBonus * liveMod * vectorPenalty * fuelBonus;
-  state.ascent.lastThrust = actualThrust;
-
-  const gravityPull = 38 + state.telemetry.trueGravity * 1.5;
-  const thrustAccel = actualThrust * 0.06;
-  const acceleration = thrustAccel - gravityPull;
-  state.ascent.velocity += acceleration * dt;
-  state.ascent.altitude += state.ascent.velocity * dt;
-
-  const heatGain = (actualThrust / 10) * dt;
-  const heatLoss = (state.config.heatCoolRate + (venting ? state.config.heatVentRate : 0)) * dt;
-  state.ascent.heat += heatGain - heatLoss;
-  state.ascent.heat = Math.max(0, state.ascent.heat);
-
-  if (venting) {
-    state.statusMessage = 'Venting heat; climb efficiency reduced.';
-    state.ascent.velocity -= 15 * dt;
-  } else if (!activeEvent) {
-    state.statusMessage = 'Balance thrust vs. heat; watch hull integrity.';
-  }
-
-  if (state.ascent.heat > 120) {
-    state.ascent.integrity = Math.max(0, state.ascent.integrity - 18 * dt);
-  }
-
-  if (state.ascent.altitude < 0) {
-    state.ascent.altitude = 0;
-    state.ascent.velocity = Math.max(0, state.ascent.velocity);
-  }
-
-  stepEvents(state, state.phaseElapsed);
-
-  spawnExhaust(state, dt);
-  maybeSpawnDebris(state, dt);
-
-  const success = state.ascent.altitude >= state.ascent.targetAltitude;
-  const failure = state.ascent.integrity <= 0 || state.ascent.heat >= 140;
-
-  if (success || failure) {
-    const accuracy = computeOptimality(state, actualThrust);
-    state.debrief = {
-      outcome: success ? 'success' : 'failure',
-      accuracy,
-      summary: success ? successSummary(accuracy) : failureSummary(state),
-      rewards: Math.round(accuracy * 240),
-    };
-    transitionPhase(state, 'debrief');
-  }
-}
-
-function updateDebrief(state: StarshipState, input: { consumePress(key: string): boolean }, dt: number) {
-  if (state.phaseElapsed < 1) return;
-  if (input.consumePress('Enter') || input.consumePress(' ')) {
-    resetForRetry(state);
-  }
-}
 
 function successSummary(accuracy: number) {
   if (accuracy > 0.95) return 'Perfect burn! The crew is weightless before the second marker.';
