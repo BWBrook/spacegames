@@ -463,32 +463,33 @@ function renderPrep(
   pointer: PointerState,
 ) {
   const { width: w, height: h } = stage;
+  const layout = getPrepLayout(stage);
   drawShipSilhouette(g, w, h, state.ascent.altitude);
-  drawMissionPanel(g, 88, 96, 290, state, 'prep');
+  drawMissionPanel(g, layout.panel.x, layout.panel.y, layout.panel.width, state, 'prep');
   drawSlider(g, {
     label: 'Booster Power',
-    x: w * 0.08,
-    y: h * 0.34,
-    width: 40,
-    height: h * 0.42,
+    x: layout.booster.x,
+    y: layout.booster.y,
+    width: layout.booster.width,
+    height: layout.booster.height,
     value: state.controls.baseThrust,
     vertical: true,
     readout: `${Math.round(state.controls.baseThrust * 100)}%  A/D`,
   });
   drawDial(g, {
     label: 'Vector Bias',
-    cx: w * 0.35,
-    cy: h * 0.65,
-    radius: 60,
+    cx: layout.vector.cx,
+    cy: layout.vector.cy,
+    radius: layout.vector.radius,
     value: state.controls.vectorBias,
     readout: `${formatPercentSigned(state.controls.vectorBias)}  W/S`,
   });
   drawSlider(g, {
     label: 'Fuel Mix',
-    x: w * 0.55,
-    y: h * 0.75,
-    width: w * 0.35,
-    height: 28,
+    x: layout.fuel.x,
+    y: layout.fuel.y,
+    width: layout.fuel.width,
+    height: layout.fuel.height,
     value: (state.controls.fuelMix + 1) / 2,
     vertical: false,
     readout: `${formatPercentSigned(state.controls.fuelMix)}  Q/E`,
@@ -505,7 +506,7 @@ function renderPrep(
   const interactionLabel = pointer.active && pointer.mode
     ? `Dragging ${pointer.mode.replace('-', ' ')}`
     : 'Mouse drag also works on any highlighted control';
-  drawHintStrip(g, w / 2 - 220, h - 70, 440, 34, interactionLabel);
+  drawHintStrip(g, layout.hint.x, layout.hint.y, layout.hint.width, layout.hint.height, interactionLabel);
 }
 
 function renderCommit(g: CanvasRenderingContext2D, stage: { width: number; height: number }, state: StarshipState) {
@@ -589,6 +590,39 @@ function renderDebrief(g: CanvasRenderingContext2D, stage: { width: number; heig
   }
 }
 
+function getPrepLayout(stage: { width: number; height: number }) {
+  const { width: w, height: h } = stage;
+  const panelWidth = Math.min(300, w * 0.25);
+  const panelHeight = 236;
+  const panel = { x: 68, y: 96, width: panelWidth, height: panelHeight };
+  return {
+    panel,
+    booster: {
+      x: panel.x + 18,
+      y: panel.y + panel.height + 52,
+      width: 40,
+      height: Math.min(248, h * 0.34),
+    },
+    vector: {
+      cx: w * 0.35,
+      cy: h * 0.65,
+      radius: 60,
+    },
+    fuel: {
+      x: w * 0.55,
+      y: h * 0.75,
+      width: Math.min(w * 0.35, 420),
+      height: 28,
+    },
+    hint: {
+      x: w / 2 - 220,
+      y: h - 70,
+      width: 440,
+      height: 34,
+    },
+  };
+}
+
 function renderStatusBar(
   g: CanvasRenderingContext2D,
   stage: { width: number; height: number },
@@ -644,9 +678,10 @@ function drawMissionPanel(
   state: StarshipState,
   mode: 'prep' | 'commit' | 'ascent',
 ) {
-  const panelHeight = mode === 'ascent' ? 408 : mode === 'commit' ? 236 : 274;
+  const panelHeight = mode === 'ascent' ? 408 : 236;
   const estimatedTarget = getTelemetryTarget(state);
   const projectedBurn = getProjectedBurn(state);
+  const offset = projectedBurn - estimatedTarget;
   const activeEvent = getActiveEvent(state);
   const nextEvent = getNextEvent(state);
   g.save();
@@ -667,7 +702,7 @@ function drawMissionPanel(
   g.fillStyle = '#7de3ff';
   g.fillText(`Telemetry target  ~${Math.round(estimatedTarget)}`, 14, 142);
   g.fillText(`Projected burn   ${Math.round(projectedBurn)}`, 14, 168);
-  g.fillText(`Offset           ${formatDelta(projectedBurn - estimatedTarget)}`, 14, 194);
+  g.fillText(`Offset           ${formatDelta(offset)}`, 14, 194);
 
   if (mode === 'ascent') {
     drawMeter(g, 14, 226, panelWidth - 28, 10, state.ascent.altitude / state.ascent.targetAltitude, '#77f7c2', 'Orbit');
@@ -693,9 +728,8 @@ function drawMissionPanel(
     g.fillText('Centered hits lift thrust ceiling.', 14, 218);
     g.fillText('Closer to the gold window means a cleaner launch.', 14, 244);
   } else {
-    g.fillStyle = '#9edcff';
-    g.fillText('Match burn to target before commit.', 14, 234);
-    g.fillText('Vector trims. Fuel nudges.', 14, 260);
+    g.fillStyle = Math.abs(offset) <= 18 ? '#8dffb7' : '#ffec6e';
+    g.fillText(Math.abs(offset) <= 18 ? 'Lock  Ready to commit' : 'Lock  Tune closer before commit', 14, 220);
   }
   g.restore();
 }
@@ -912,25 +946,22 @@ function wrapText(
 
 function updatePointerControl(pointer: PointerState, state: StarshipState, stage: { width: number; height: number }) {
   if (!pointer.mode) return;
-  const { width: w, height: h } = stage;
+  const prep = getPrepLayout(stage);
   switch (pointer.mode) {
     case 'base-thrust': {
-      const slider = { x: w * 0.08, y: h * 0.34, height: h * 0.42 };
-      const ratio = 1 - clamp01((pointer.y - slider.y) / slider.height);
+      const ratio = 1 - clamp01((pointer.y - prep.booster.y) / prep.booster.height);
       state.controls.baseThrust = ratio;
       break;
     }
     case 'vector': {
-      const dial = { cx: w * 0.35, cy: h * 0.65 };
-      const dx = pointer.x - dial.cx;
-      const dy = pointer.y - dial.cy;
+      const dx = pointer.x - prep.vector.cx;
+      const dy = pointer.y - prep.vector.cy;
       const angle = Math.atan2(dy, dx);
       state.controls.vectorBias = clampSigned((angle + Math.PI / 2) / Math.PI);
       break;
     }
     case 'fuel': {
-      const slider = { x: w * 0.55, width: w * 0.35 };
-      const ratio = clamp01((pointer.x - slider.x) / slider.width);
+      const ratio = clamp01((pointer.x - prep.fuel.x) / prep.fuel.width);
       state.controls.fuelMix = ratio * 2 - 1;
       break;
     }
@@ -944,12 +975,13 @@ function updatePointerControl(pointer: PointerState, state: StarshipState, stage
 }
 
 function resolvePointerMode(x: number, y: number, stage: { width: number; height: number }, phase: StarshipState['phase']) {
-  const { width: w, height: h } = stage;
   if (phase === 'prep') {
-    if (hitRect(x, y, w * 0.08, h * 0.34, 40, h * 0.42)) return 'base-thrust';
-    if (hitCircle(x, y, w * 0.35, h * 0.65, 70)) return 'vector';
-    if (hitRect(x, y, w * 0.55, h * 0.75, w * 0.35, 40)) return 'fuel';
+    const prep = getPrepLayout(stage);
+    if (hitRect(x, y, prep.booster.x, prep.booster.y, prep.booster.width, prep.booster.height)) return 'base-thrust';
+    if (hitCircle(x, y, prep.vector.cx, prep.vector.cy, prep.vector.radius + 10)) return 'vector';
+    if (hitRect(x, y, prep.fuel.x, prep.fuel.y, prep.fuel.width, 40)) return 'fuel';
   } else if (phase === 'ascent') {
+    const { width: w, height: h } = stage;
     if (hitRect(x, y, w - 70, h * 0.2, 32, h * 0.6)) return 'throttle';
   }
   return null;

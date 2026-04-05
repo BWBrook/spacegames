@@ -1,14 +1,21 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { chromium } from 'playwright';
+import { chromium, webkit } from 'playwright';
 
 const DEFAULT_URL = 'http://127.0.0.1:5173';
 const DEFAULT_OUT_DIR = 'output/playtest-starship';
+const DEFAULT_BROWSER = 'chromium';
+
+const BROWSERS = {
+  chromium,
+  webkit,
+};
 
 function parseArgs(argv) {
   const args = {
     url: DEFAULT_URL,
     outDir: DEFAULT_OUT_DIR,
+    browser: DEFAULT_BROWSER,
   };
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i];
@@ -18,6 +25,9 @@ function parseArgs(argv) {
       i++;
     } else if (arg === '--out-dir' && next) {
       args.outDir = next;
+      i++;
+    } else if (arg === '--browser' && next) {
+      args.browser = next;
       i++;
     }
   }
@@ -30,9 +40,13 @@ function clamp(value, min, max) {
 
 async function main() {
   const args = parseArgs(process.argv);
+  const launcher = BROWSERS[args.browser];
+  if (!launcher) {
+    throw new Error(`Unsupported browser "${args.browser}". Use one of: ${Object.keys(BROWSERS).join(', ')}`);
+  }
   fs.mkdirSync(args.outDir, { recursive: true });
 
-  const browser = await chromium.launch({ headless: true });
+  const browser = await launcher.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 1024 } });
   const consoleErrors = [];
 
@@ -44,6 +58,7 @@ async function main() {
   });
 
   await page.goto(args.url, { waitUntil: 'networkidle' });
+  await page.waitForSelector('#start', { state: 'visible' });
   await page.click('#start');
   await page.waitForTimeout(120);
   await page.keyboard.press('Enter');
@@ -128,6 +143,7 @@ async function main() {
   await browser.close();
 
   const report = {
+    browser: args.browser,
     url: args.url,
     outDir: args.outDir,
     finalSnapshot: snap,
