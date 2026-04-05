@@ -26,6 +26,10 @@ canvas#stage {
   display: block;
 }
 
+canvas#stage:focus {
+  outline: none;
+}
+
 #gate {
   position: fixed;
   inset: 0;

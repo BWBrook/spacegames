@@ -30,6 +30,8 @@ export interface GameInstance {
   update(dt: number): void;
   render(): void;
   exit?(): void;
+  debugSnapshot?(): unknown;
+  debugAction?(action: string, payload?: unknown): unknown;
 }
 
 export type GameFactory = (ctx: GameContext) => GameInstance;
@@ -51,6 +53,8 @@ export interface RetroInstance {
   update(dt: number): void;
   render(): void;
   exit?(): void;
+  debugSnapshot?(): unknown;
+  debugAction?(action: string, payload?: unknown): unknown;
 }
 
 export type RetroFactory = (ctx: RetroContext) => RetroInstance;

@@ -16,6 +16,8 @@ export interface Scene {
   exit?(): void;
   update(dt: number): void;
   render(): void;
+  debugSnapshot?(): unknown;
+  debugAction?(action: string, payload?: unknown): unknown;
 }
 
 type SceneFactory = (context: SceneContext) => Scene;
@@ -56,5 +58,13 @@ export class SceneManager {
 
   current() {
     return this.activeName;
+  }
+
+  debugSnapshot() {
+    return this.active?.debugSnapshot?.() ?? { scene: this.activeName };
+  }
+
+  debugAction(action: string, payload?: unknown) {
+    return this.active?.debugAction?.(action, payload) ?? null;
   }
 }

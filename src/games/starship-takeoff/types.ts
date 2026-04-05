@@ -58,10 +58,13 @@ export interface AscentState {
   altitude: number;
   velocity: number;
   heat: number;
+  peakHeat: number;
   integrity: number;
   thrust: number; // 0..1
   targetAltitude: number;
   lastThrust: number;
+  burnIntegral: number;
+  burnTime: number;
   events: EventInstance[];
 }
 

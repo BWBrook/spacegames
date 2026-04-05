@@ -31,9 +31,12 @@ export function createStarshipState(seed = Date.now()): StarshipState {
       altitude: 0,
       velocity: 0,
       heat: 12,
+      peakHeat: 12,
       integrity: 100,
       thrust: 0.55,
       lastThrust: 0.55,
+      burnIntegral: 0,
+      burnTime: 0,
       targetAltitude: STARSHIP_CONSTANTS.ascentTargetAltitude,
       events,
     },
@@ -98,9 +101,12 @@ export function resetForRetry(state: StarshipState) {
   state.ascent.altitude = 0;
   state.ascent.velocity = 0;
   state.ascent.heat = 12;
+  state.ascent.peakHeat = 12;
   state.ascent.integrity = 100;
   state.ascent.thrust = 0.55;
   state.ascent.lastThrust = 0.55;
+  state.ascent.burnIntegral = 0;
+  state.ascent.burnTime = 0;
   state.ascent.events = buildEventSchedule(state.rng);
   state.debrief = null;
   state.statusMessage = 'Balance boosters, vector, and fuel mix before ignition.';

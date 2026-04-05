@@ -104,22 +104,7 @@ export function createGameplayScene(ctx: SceneContext): Scene {
         g.restore();
       }
 
-      // HUD overlay
-      const g = ctx.stage.ctx;
-      g.save();
-      g.fillStyle = 'rgba(3, 8, 15, 0.65)';
-      g.fillRect(0, 0, ctx.stage.width, 48);
-      g.fillStyle = '#c9efff';
-      g.font = '700 18px "Space Mono", monospace';
-      g.textAlign = 'left';
-      const modeLabel = currentMode === 'retro' ? 'Retro' : 'Reimagined';
-      const title = entry ? `${entry.title} (${entry.year}) · ${modeLabel}` : '—';
-      g.fillText(title, 16, 30);
-      g.textAlign = 'right';
-      g.font = '14px "Space Mono", monospace';
-      g.fillStyle = '#8dd5ff';
-      g.fillText('Esc ↩ menu', ctx.stage.width - 16, 28);
-      g.restore();
+      renderEscapeChip(ctx.stage.ctx, ctx.stage.width, ctx.stage.height);
     },
     exit() {
       modernGame?.exit?.();
@@ -128,7 +113,39 @@ export function createGameplayScene(ctx: SceneContext): Scene {
       retroGame = null;
       entry = null;
     },
+    debugSnapshot() {
+      return {
+        scene: 'gameplay',
+        mode: currentMode,
+        loading,
+        error,
+        gameId: entry?.id ?? null,
+        game:
+          (currentMode === 'retro' ? retroGame : modernGame)?.debugSnapshot?.()
+          ?? null,
+      };
+    },
+    debugAction(action: string, payload?: unknown) {
+      return (currentMode === 'retro' ? retroGame : modernGame)?.debugAction?.(action, payload) ?? null;
+    },
   };
+}
+
+function renderEscapeChip(g: CanvasRenderingContext2D, width: number, height: number) {
+  const chipWidth = 148;
+  const chipHeight = 28;
+  const x = width - chipWidth - 18;
+  const y = height - chipHeight - 18;
+  g.save();
+  g.fillStyle = 'rgba(4, 10, 18, 0.8)';
+  g.fillRect(x, y, chipWidth, chipHeight);
+  g.strokeStyle = 'rgba(107, 220, 255, 0.55)';
+  g.strokeRect(x, y, chipWidth, chipHeight);
+  g.fillStyle = '#8dd5ff';
+  g.font = '14px "Space Mono", monospace';
+  g.textAlign = 'center';
+  g.fillText('Esc to menu', x + chipWidth / 2, y + 18);
+  g.restore();
 }
 
 function wrapMultiline(

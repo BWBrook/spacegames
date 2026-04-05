@@ -2,7 +2,7 @@ export const STARSHIP_CONSTANTS = {
   prepDuration: 18, // seconds
   commitWindow: 4,
   commitCursorSpeed: 0.75, // cycles per second
-  ascentTargetAltitude: 120_000, // meters
+  ascentTargetAltitude: 32_000, // meters
   gravityRange: [8, 26] as const,
   windRange: [12, 38] as const,
   baseThrustRange: [150, 950] as const,

@@ -129,6 +129,15 @@ export function createMenuScene(ctx: SceneContext): Scene {
       }
       g.restore();
     },
+    debugSnapshot() {
+      return {
+        scene: 'menu',
+        selected,
+        selectedGameId: ctx.manifest[selected]?.id ?? null,
+        modePickerActive,
+        modeIndex,
+      };
+    },
   };
 }
 
