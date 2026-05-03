@@ -108,7 +108,7 @@ async function main() {
 
   await setControl('throttle', 0.98);
   let capturedAscent = false;
-  for (let i = 0; i < 420; i++) {
+  for (let i = 0; i < 900; i++) {
     snap = await snapshot();
     if (snap.game.phase === 'debrief') break;
 
@@ -146,6 +146,7 @@ async function main() {
     browser: args.browser,
     url: args.url,
     outDir: args.outDir,
+    reachedDebrief: snap.game.phase === 'debrief',
     finalSnapshot: snap,
     consoleErrors,
   };
@@ -156,6 +157,9 @@ async function main() {
     'utf8',
   );
   console.log(JSON.stringify(report, null, 2));
+  if (!report.reachedDebrief) {
+    throw new Error(`Playtest did not reach debrief; ended in ${snap.game.phase}`);
+  }
 }
 
 main().catch(err => {

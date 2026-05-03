@@ -678,7 +678,7 @@ function drawMissionPanel(
   state: StarshipState,
   mode: 'prep' | 'commit' | 'ascent',
 ) {
-  const panelHeight = mode === 'ascent' ? 408 : 236;
+  const panelHeight = mode === 'ascent' ? 408 : mode === 'commit' ? 264 : 236;
   const estimatedTarget = getTelemetryTarget(state);
   const projectedBurn = getProjectedBurn(state);
   const offset = projectedBurn - estimatedTarget;
@@ -726,7 +726,7 @@ function drawMissionPanel(
   } else if (mode === 'commit') {
     g.fillStyle = '#9edcff';
     g.fillText('Centered hits lift thrust ceiling.', 14, 218);
-    g.fillText('Closer to the gold window means a cleaner launch.', 14, 244);
+    g.fillText('Gold-window hit means cleaner launch.', 14, 244);
   } else {
     g.fillStyle = Math.abs(offset) <= 18 ? '#8dffb7' : '#ffec6e';
     g.fillText(Math.abs(offset) <= 18 ? 'Lock  Ready to commit' : 'Lock  Tune closer before commit', 14, 220);
