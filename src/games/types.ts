@@ -2,6 +2,19 @@ import type { AudioManager } from '../core/audio';
 import type { InputManager } from '../core/input';
 import type { Stage } from '../core/stage';
 
+export type SourcePlatform = 'c64-basic' | 'bbc-micro' | 'bbc-dfs';
+
+export type SourceRole = 'transcription' | 'intro' | 'game' | 'disk-image' | 'catalog';
+
+export interface SourceRef {
+  id: string;
+  label: string;
+  path: string;
+  platform: SourcePlatform;
+  role: SourceRole;
+  dfsName?: string;
+}
+
 export interface GameManifestEntry {
   id: string;
   title: string;
@@ -9,6 +22,7 @@ export interface GameManifestEntry {
   year: number;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   basicSource: string;
+  sources: SourceRef[];
   thumbnail?: string;
   status?: string;
   loader: () => Promise<GameModule>;

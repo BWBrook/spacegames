@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "extract:bbc": "python3 tools/extract_bbc_ssd.py assets-src/Disc999-ComputerSpaceGamesUsborne.ssd --out basic/bbc/usborne-computer-space-games",
     "playtest:starship": "node scripts/playtest/starship_takeoff_autopilot.mjs"
   },
   "devDependencies": {

@@ -1,3 +1,4 @@
+import { RetroTerminal } from '../../core/retroTerminal';
 import type { RetroFactory } from '../types';
 
 interface RetroState {
@@ -6,57 +7,38 @@ interface RetroState {
   target: number;
   guesses: number;
   maxGuesses: number;
-  lines: string[];
-  input: string;
   done: boolean;
-  caretTimer: number;
 }
 
-const MAX_LINES = 18;
-
 export const createRetroGame: RetroFactory = ({ stage, manifest }) => {
+  const source = manifest.sources.find(item => item.id === 'starship-bbc-game')
+    ?? manifest.sources.find(item => item.role === 'game')
+    ?? manifest.sources.find(item => item.role === 'transcription');
+  const sourceLabel = source
+    ? `Source: ${source.label}${source.dfsName ? ` ${source.dfsName}` : ''}`
+    : `Source: ${manifest.basicSource}`;
+  const terminal = new RetroTerminal({
+    stage,
+    title: `${manifest.title} (Retro)`,
+    sourceLabel,
+  });
   const state: RetroState = {
     gravity: 0,
     wind: 0,
     target: 0,
     guesses: 0,
     maxGuesses: 10,
-    lines: [],
-    input: '',
     done: false,
-    caretTimer: 0,
   };
 
   const keyHandler = (event: KeyboardEvent) => {
-    if (event.metaKey || event.ctrlKey) return;
-    const key = event.key;
-    if (key === 'Enter') {
-      event.preventDefault();
-      submitGuess();
-      return;
-    }
-    if (key === 'Backspace') {
-      event.preventDefault();
-      state.input = state.input.slice(0, -1);
-      return;
-    }
-    if (state.done) {
-      if (key.toLowerCase() === 'r') {
-        event.preventDefault();
-        startRound();
-      }
-      return;
-    }
-    if (/^[0-9-]$/.test(key)) {
-      event.preventDefault();
-      if (state.input.length < 6) state.input += key;
-    }
+    terminal.handleKey(event, {
+      onSubmit: submitGuess,
+      inputEnabled: !state.done,
+      replayEnabled: state.done,
+      onReplay: startRound,
+    });
   };
-
-  function pushLine(text: string) {
-    state.lines.push(text);
-    if (state.lines.length > MAX_LINES) state.lines.splice(0, state.lines.length - MAX_LINES);
-  }
 
   function startRound() {
     state.gravity = randInt(1, 20);
@@ -64,50 +46,50 @@ export const createRetroGame: RetroFactory = ({ stage, manifest }) => {
     state.target = state.gravity * state.wind;
     state.guesses = 0;
     state.done = false;
-    state.input = '';
-    state.lines = [];
-    pushLine('STARSHIP TAKE-OFF');
-    pushLine('');
-    pushLine(`GRAVITY=${state.gravity}`);
-    pushLine('TYPE IN FORCE (10 TRIES)');
+    terminal.clear();
+    terminal.pushLine('STARSHIP TAKE-OFF');
+    terminal.pushLine('CRASHED CAPTAIN: CAPTURED ALIEN SHIP');
+    terminal.pushLine('');
+    terminal.pushLine(`GRAVITY=${state.gravity}`);
+    terminal.pushLine('TYPE IN FORCE (10 TRIES)');
   }
 
   function submitGuess() {
     if (state.done) return;
-    const trimmed = state.input.trim();
+    const trimmed = terminal.input.trim();
     if (!trimmed) {
-      pushLine('ENTER A NUMBER.');
+      terminal.pushLine('ENTER A NUMBER.');
       return;
     }
     const guess = Number.parseInt(trimmed, 10);
     if (Number.isNaN(guess)) {
-      pushLine('ONLY NUMBERS PLEASE.');
-      state.input = '';
+      terminal.pushLine('ONLY NUMBERS PLEASE.');
+      terminal.input = '';
       return;
     }
-    state.input = '';
+    terminal.input = '';
     state.guesses += 1;
-    pushLine(`> ${guess}`);
-    if (guess > state.target) pushLine('TOO HIGH');
-    if (guess < state.target) pushLine('TOO LOW');
+    terminal.pushLine(`> ${guess}`);
+    if (guess > state.target) terminal.pushLine('TOO HIGH - FAIL-SAFE CUT IN');
+    if (guess < state.target) terminal.pushLine('TOO LOW');
     if (guess === state.target) {
-      pushLine('GOOD TAKE OFF');
-      endRound(true);
+      terminal.pushLine('GOOD TAKE OFF');
+      endRound();
       return;
     }
     if (state.guesses >= state.maxGuesses) {
-      pushLine('YOU FAILED --');
-      pushLine('THE ALIENS GOT YOU');
-      endRound(false);
+      terminal.pushLine('YOU FAILED --');
+      terminal.pushLine('THE ALIENS GOT YOU');
+      endRound();
       return;
     }
-    pushLine('TRY AGAIN');
+    terminal.pushLine('TRY AGAIN');
   }
 
-  function endRound(success: boolean) {
+  function endRound() {
     state.done = true;
-    pushLine('---');
-    pushLine('PRESS R TO REPLAY OR ESC TO MENU');
+    terminal.pushLine('---');
+    terminal.pushLine('PRESS R TO REPLAY OR ESC TO MENU');
   }
 
   return {
@@ -116,38 +98,24 @@ export const createRetroGame: RetroFactory = ({ stage, manifest }) => {
       window.addEventListener('keydown', keyHandler);
     },
     update(dt: number) {
-      state.caretTimer = (state.caretTimer + dt) % 1.2;
+      terminal.update(dt);
     },
     render() {
-      const g = stage.ctx;
-      g.save();
-      g.fillStyle = '#020512';
-      g.fillRect(0, 0, stage.width, stage.height);
-      g.translate(32, 64);
-      g.fillStyle = '#5df7ff';
-      g.font = '600 32px "Space Mono", monospace';
-      g.fillText(`${manifest.title} (Retro)`, 0, -24);
-      g.font = '16px "Space Mono", monospace';
-      g.fillStyle = '#9be7ff';
-      g.fillText(`Source: ${manifest.basicSource}`, 0, 0);
-      g.translate(0, 24);
-      g.fillStyle = '#dff9ff';
-      g.font = '18px "Space Mono", monospace';
-      state.lines.forEach((line, i) => {
-        g.fillText(line, 0, i * 22);
-      });
-      const caretOn = state.caretTimer < 0.6;
-      const promptY = state.lines.length * 22 + 8;
-      const prompt = `> ${state.input}`;
-      g.fillText(prompt, 0, promptY);
-      if (caretOn) {
-        const metrics = g.measureText(prompt);
-        g.fillRect(metrics.width + 4, promptY - 16, 12, 2);
-      }
-      g.restore();
+      terminal.render();
     },
     exit() {
       window.removeEventListener('keydown', keyHandler);
+    },
+    debugSnapshot() {
+      return {
+        gameId: manifest.id,
+        source: source?.id ?? null,
+        gravity: state.gravity,
+        guesses: state.guesses,
+        done: state.done,
+        lines: [...terminal.lines],
+        input: terminal.input,
+      };
     },
   };
 };
