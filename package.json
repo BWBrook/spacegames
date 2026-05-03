@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "extract:bbc": "python3 tools/extract_bbc_ssd.py assets-src/Disc999-ComputerSpaceGamesUsborne.ssd --out basic/bbc/usborne-computer-space-games",
-    "playtest:starship": "node scripts/playtest/starship_takeoff_autopilot.mjs"
+    "playtest:starship": "node scripts/playtest/starship_takeoff_autopilot.mjs",
+    "playtest:intergalactic": "node scripts/playtest/intergalactic_games_autopilot.mjs"
   },
   "devDependencies": {
     "playwright": "^1.58.2",

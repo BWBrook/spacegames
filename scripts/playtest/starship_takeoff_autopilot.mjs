@@ -64,7 +64,11 @@ async function main() {
   await page.keyboard.press('Enter');
   await page.waitForTimeout(80);
   await page.keyboard.press('Enter');
-  await page.waitForTimeout(80);
+  await page.waitForFunction(() => {
+    if (typeof window.render_game_to_text !== 'function') return false;
+    const snap = JSON.parse(window.render_game_to_text());
+    return snap.scene === 'gameplay' && snap.gameId === 'starship-takeoff' && Boolean(snap.game);
+  }, null, { timeout: 5000 });
 
   const canvas = page.locator('canvas');
   const box = await canvas.boundingBox();
