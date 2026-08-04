@@ -16,7 +16,7 @@ export const createRetroGame: RetroFactory = ({ stage, manifest }) => {
     ?? manifest.sources.find(item => item.role === 'transcription');
   const sourceLabel = source
     ? `Source: ${source.label}${source.dfsName ? ` ${source.dfsName}` : ''}`
-    : `Source: ${manifest.basicSource}`;
+    : 'Source: unavailable';
   const terminal = new RetroTerminal({
     stage,
     title: `${manifest.title} (Retro)`,
@@ -123,5 +123,3 @@ export const createRetroGame: RetroFactory = ({ stage, manifest }) => {
 function randInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
-export default { createRetroGame };

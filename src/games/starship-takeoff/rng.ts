@@ -10,7 +10,3 @@ export function mulberry32(seed: number) {
 export function randomRange(rng: () => number, min: number, max: number) {
   return min + rng() * (max - min);
 }
-
-export function randomInt(rng: () => number, min: number, max: number) {
-  return Math.floor(randomRange(rng, min, max + 1));
-}

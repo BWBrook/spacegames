@@ -7,13 +7,13 @@ This repo is set up as a multi-game browser anthology. Each BASIC original shoul
 For a game with id `starship-takeoff`, use:
 
 - `basic/starship_takeoff.bas`
-  - Simple transcription or legacy source used by older repo workflows.
+  - Simple transcription used as a readable source reference.
 - `basic/bbc/usborne-computer-space-games/`
   - Book-level BBC Micro source archive extracted from the `.ssd` image.
   - Keep the archive intact and link to relevant files from game metadata instead of copying them into per-game folders.
 - `src/games/manifest.ts`
   - Register the game and its source references.
-  - Keep `basicSource` for compatibility and use `sources` for canonical source mapping, including intro files, game files, disk images, and catalogues.
+  - Use `sources` for the canonical mapping of intro files, game files, disk images, and catalogues.
 - `docs/starship-takeoff.md`
   - Living design document for both lanes.
   - Include:
@@ -26,7 +26,7 @@ For a game with id `starship-takeoff`, use:
 - `docs/human_playtest/starship_takeoff.md`
   - Fast human feedback form for GUI playtests.
   - Optimize for low-effort answers: multiple choice first, free-form notes last.
-- `docs/manuals/starship_takeoff.md`
+- `docs/manuals/starship-takeoff.md`
   - Player-facing instruction manual.
   - Create this once the game is stable enough that controls, win/loss flow, and presentation are unlikely to change every day.
 

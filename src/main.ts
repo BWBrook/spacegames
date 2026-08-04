@@ -12,13 +12,13 @@ declare global {
     render_game_to_text?: () => string;
     advanceTime?: (ms: number) => void;
     __vibeDebug?: {
-    currentScene: () => string;
-    snapshot: () => unknown;
-    advanceTime: (ms: number) => unknown;
-    command: (action: string, payload?: unknown) => unknown;
-    focusStage: () => void;
-    resumeRealtime: () => void;
-  };
+      currentScene: () => string;
+      snapshot: () => unknown;
+      advanceTime: (ms: number) => unknown;
+      command: (action: string, payload?: unknown) => unknown;
+      focusStage: () => void;
+      resumeRealtime: () => void;
+    };
   }
 }
 
@@ -76,32 +76,34 @@ function loop(now: number) {
 }
 requestAnimationFrame(loop);
 
-window.advanceTime = (ms: number) => {
-  manualClock = true;
-  let remaining = Math.max(0, ms) / 1000;
-  while (remaining > 0) {
-    const chunk = Math.min(0.25, remaining);
-    stepSimulation(chunk);
-    remaining -= chunk;
-  }
-  renderFrame();
-};
+if (import.meta.env.DEV) {
+  window.advanceTime = (ms: number) => {
+    manualClock = true;
+    let remaining = Math.max(0, ms) / 1000;
+    while (remaining > 0) {
+      const chunk = Math.min(0.25, remaining);
+      stepSimulation(chunk);
+      remaining -= chunk;
+    }
+    renderFrame();
+  };
 
-window.render_game_to_text = () => JSON.stringify(snapshotState());
-window.__vibeDebug = {
-  currentScene: () => scenes.current(),
-  snapshot: () => snapshotState(),
-  advanceTime: (ms: number) => {
-    window.advanceTime?.(ms);
-    return snapshotState();
-  },
-  command: (action: string, payload?: unknown) => scenes.debugAction(action, payload),
-  focusStage,
-  resumeRealtime: () => {
-    manualClock = false;
-    last = performance.now();
-  },
-};
+  window.render_game_to_text = () => JSON.stringify(snapshotState());
+  window.__vibeDebug = {
+    currentScene: () => scenes.current(),
+    snapshot: () => snapshotState(),
+    advanceTime: (ms: number) => {
+      window.advanceTime?.(ms);
+      return snapshotState();
+    },
+    command: (action: string, payload?: unknown) => scenes.debugAction(action, payload),
+    focusStage,
+    resumeRealtime: () => {
+      manualClock = false;
+      last = performance.now();
+    },
+  };
+}
 
 startBtn.addEventListener('click', async () => {
   await audio.unlock();

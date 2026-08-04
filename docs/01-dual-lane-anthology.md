@@ -22,7 +22,7 @@ For example, `Starship Take-Off` keeps the hidden `G * W` force puzzle, while tu
 
 ## Manifest Contract
 
-Every game entry should keep `basicSource` for the current menu and backwards compatibility, and add richer `sources` metadata:
+Every game entry should include a `sources` array with the relevant canonical files:
 
 - `transcription` for any simple hand-entered or legacy `.bas` source.
 - `intro` for original framing, instructions, or menu programs.

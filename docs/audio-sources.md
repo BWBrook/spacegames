@@ -9,4 +9,4 @@
 | `starship/success` | `SCIMisc_Texture Small 03_RSCPC_PX.wav` | Parallax | First 5s clipped for debrief success sting. |
 | `starship/failure` | `DSGNSynth_Hit Large Tight 16_RSCPC_PX.wav` | Parallax | Punchy impact for failure screen. |
 
-All material originates from the free **Sci-Fi Sound Effects** bundle on 99Sounds (Rescopic Sound, 24-bit/96 kHz WAV, royalty-free for commercial use). See https://99sounds.org/sci-fi-sounds/ for license terms; no attribution required but we preserve metadata and original folder structure in `assets-src/audio/99sounds-sci-fi/` for provenance.
+All material originates from the free **Sci-Fi Sound Effects** bundle on 99Sounds (Rescopic Sound, 24-bit/96 kHz WAV, royalty-free for commercial use). See https://99sounds.org/sci-fi-sounds/ for license terms. The original pack is not stored in this repo; the filenames above preserve provenance, while the playable derivatives live under `public/audio/`.

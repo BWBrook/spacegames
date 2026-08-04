@@ -21,13 +21,9 @@ export interface GameManifestEntry {
   summary: string;
   year: number;
   difficulty: 'Easy' | 'Medium' | 'Hard';
-  basicSource: string;
   sources: SourceRef[];
-  thumbnail?: string;
-  status?: string;
   loader: () => Promise<GameModule>;
   retro?: {
-    description: string;
     loader: () => Promise<RetroModule>;
   };
 }
@@ -62,16 +58,7 @@ export interface RetroContext {
   manifest: GameManifestEntry;
 }
 
-export interface RetroInstance {
-  enter?(): void;
-  update(dt: number): void;
-  render(): void;
-  exit?(): void;
-  debugSnapshot?(): unknown;
-  debugAction?(action: string, payload?: unknown): unknown;
-}
-
-export type RetroFactory = (ctx: RetroContext) => RetroInstance;
+export type RetroFactory = (ctx: RetroContext) => GameInstance;
 
 export interface RetroModule {
   createRetroGame: RetroFactory;

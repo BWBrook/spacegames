@@ -110,7 +110,8 @@ export function createMenuScene(ctx: SceneContext): Scene {
 
         g.fillStyle = '#9ab8d1';
         g.font = '14px "Space Mono", monospace';
-        const meta = `${entry.year} · ${entry.difficulty} · BASIC: ${entry.basicSource}`;
+        const source = entry.sources.find(item => item.role === 'game') ?? entry.sources[0];
+        const meta = `${entry.year} · ${entry.difficulty} · SOURCE: ${source?.path ?? 'unavailable'}`;
         g.fillText(meta, startX + padding, y + padding + 30);
 
         g.fillStyle = '#c5d8ea';

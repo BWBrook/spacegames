@@ -22,7 +22,7 @@ export const createRetroGame: RetroFactory = ({ stage, manifest }) => {
     title: `${manifest.title} (Retro)`,
     sourceLabel: source
       ? `Source: ${source.label}${source.dfsName ? ` ${source.dfsName}` : ''}`
-      : `Source: ${manifest.basicSource}`,
+      : 'Source: unavailable',
   });
   const state: RetroState = {
     targetHeight: 1,
@@ -142,7 +142,7 @@ export const createRetroGame: RetroFactory = ({ stage, manifest }) => {
     debugSnapshot() {
       return {
         gameId: manifest.id,
-        source: source?.path ?? manifest.basicSource,
+        source: source?.path ?? null,
         targetHeight: state.targetHeight,
         attempt: state.attempt,
         prompt: state.prompt,

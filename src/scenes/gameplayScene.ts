@@ -4,7 +4,6 @@ import type {
   GameManifestEntry,
   GameModule,
   GameMode,
-  RetroInstance,
   RetroModule,
 } from '../games/types';
 
@@ -17,18 +16,15 @@ export function createGameplayScene(ctx: SceneContext): Scene {
   let loading = false;
   let error: string | null = null;
   let entry: GameManifestEntry | null = null;
-  let modernGame: GameInstance | null = null;
-  let retroGame: RetroInstance | null = null;
+  let activeGame: GameInstance | null = null;
   let currentMode: GameMode = 'modern';
   let requestId = 0;
 
   async function load(entryToLoad: GameManifestEntry, mode: GameMode) {
     loading = true;
     error = null;
-    modernGame?.exit?.();
-    retroGame?.exit?.();
-    modernGame = null;
-    retroGame = null;
+    activeGame?.exit?.();
+    activeGame = null;
     const token = ++requestId;
     try {
       if (mode === 'retro') {
@@ -40,7 +36,7 @@ export function createGameplayScene(ctx: SceneContext): Scene {
           audio: ctx.audio,
           manifest: entryToLoad,
         });
-        retroGame = instance;
+        activeGame = instance;
         instance.enter?.();
       } else {
         const module: GameModule = await entryToLoad.loader();
@@ -51,7 +47,7 @@ export function createGameplayScene(ctx: SceneContext): Scene {
           audio: ctx.audio,
           manifest: entryToLoad,
         });
-        modernGame = instance;
+        activeGame = instance;
         instance.enter?.();
       }
     } catch (err) {
@@ -79,14 +75,12 @@ export function createGameplayScene(ctx: SceneContext): Scene {
         ctx.goto('menu');
         return;
       }
-      if (currentMode === 'retro') retroGame?.update(dt);
-      else modernGame?.update(dt);
+      activeGame?.update(dt);
     },
     render() {
       const { stage } = ctx;
-      if (currentMode === 'retro' ? retroGame : modernGame) {
-        if (currentMode === 'retro') retroGame?.render();
-        else modernGame?.render();
+      if (activeGame) {
+        activeGame.render();
       } else {
         stage.clear('#060b16');
         const g = stage.ctx;
@@ -107,10 +101,10 @@ export function createGameplayScene(ctx: SceneContext): Scene {
       renderEscapeChip(ctx.stage.ctx, ctx.stage.width, ctx.stage.height);
     },
     exit() {
-      modernGame?.exit?.();
-      retroGame?.exit?.();
-      modernGame = null;
-      retroGame = null;
+      requestId += 1;
+      activeGame?.exit?.();
+      activeGame = null;
+      loading = false;
       entry = null;
     },
     debugSnapshot() {
@@ -121,12 +115,11 @@ export function createGameplayScene(ctx: SceneContext): Scene {
         error,
         gameId: entry?.id ?? null,
         game:
-          (currentMode === 'retro' ? retroGame : modernGame)?.debugSnapshot?.()
-          ?? null,
+          activeGame?.debugSnapshot?.() ?? null,
       };
     },
     debugAction(action: string, payload?: unknown) {
-      return (currentMode === 'retro' ? retroGame : modernGame)?.debugAction?.(action, payload) ?? null;
+      return activeGame?.debugAction?.(action, payload) ?? null;
     },
   };
 }

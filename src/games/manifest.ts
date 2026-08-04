@@ -1,11 +1,4 @@
-import type { GameManifestEntry, GameModule, RetroModule } from './types';
-
-async function resolveModule<T>(promise: Promise<T>): Promise<GameModule> {
-  const mod = (await promise) as unknown as Partial<GameModule> & { default?: Partial<GameModule> };
-  if (mod?.createGame) return { createGame: mod.createGame };
-  if (mod?.default?.createGame) return { createGame: mod.default.createGame } as GameModule;
-  throw new Error('Module missing createGame export');
-}
+import type { GameManifestEntry } from './types';
 
 export const games: GameManifestEntry[] = [
   {
@@ -14,7 +7,6 @@ export const games: GameManifestEntry[] = [
     summary: 'Calibrate launch thrust to punch through unpredictable gravity wells.',
     year: 1980,
     difficulty: 'Easy',
-    basicSource: 'basic/starship_takeoff.bas',
     sources: [
       {
         id: 'starship-simple-transcription',
@@ -54,11 +46,9 @@ export const games: GameManifestEntry[] = [
         role: 'catalog',
       },
     ],
-    status: 'Prototype',
-    loader: () => resolveModule(import('./starship-takeoff')),
+    loader: () => import('./starship-takeoff'),
     retro: {
-      description: 'Original BASIC guessing game rendered in a retro terminal.',
-      loader: () => resolveRetroModule(import('./starship-takeoff/retro')),
+      loader: () => import('./starship-takeoff/retro'),
     },
   },
   {
@@ -67,7 +57,6 @@ export const games: GameManifestEntry[] = [
     summary: 'Tune angle, speed, and broadcast lock to win the orbital TV rights race.',
     year: 1980,
     difficulty: 'Medium',
-    basicSource: 'basic/bbc/usborne-computer-space-games/02IG.bas',
     sources: [
       {
         id: 'intergalactic-bbc-intro',
@@ -100,21 +89,9 @@ export const games: GameManifestEntry[] = [
         role: 'catalog',
       },
     ],
-    status: 'Prototype',
-    loader: () => resolveModule(import('./intergalactic-games')),
+    loader: () => import('./intergalactic-games'),
     retro: {
-      description: 'Original angle-and-speed satellite launch game rendered in a retro terminal.',
-      loader: () => resolveRetroModule(import('./intergalactic-games/retro')),
+      loader: () => import('./intergalactic-games/retro'),
     },
   },
 ];
-
-async function resolveRetroModule<T>(promise: Promise<T>): Promise<RetroModule> {
-  const mod = (await promise) as unknown as Partial<RetroModule> & { default?: Partial<RetroModule> };
-  if (mod?.createRetroGame) return { createRetroGame: mod.createRetroGame };
-  if (mod?.default && 'createRetroGame' in mod.default!) {
-    const candidate = mod.default as Partial<RetroModule>;
-    if (candidate.createRetroGame) return { createRetroGame: candidate.createRetroGame };
-  }
-  throw new Error('Module missing createRetroGame export');
-}
