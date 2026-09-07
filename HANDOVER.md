@@ -1,6 +1,6 @@
 # Successor Handover
 
-Prepared 7 September 2026 for a fresh task in `/Users/bwbrook/games/vibe-game`.
+Prepared 7 September 2026 for a fresh task in `/Users/bwbrook/games/spacegames`.
 Use this as orientation, then trust the current code and the user's new brief.
 You do not need to reconstruct the previous conversation.
 
@@ -95,7 +95,7 @@ extraction changes. Before a human handoff, the lane contract calls for relevant
 Chromium/WebKit smoke checks and one visible browser pass through mode selection,
 both lanes, and Escape back to the menu.
 
-Debug hooks (`render_game_to_text`, `advanceTime`, `__vibeDebug`) exist only on
+Debug hooks (`render_game_to_text`, `advanceTime`, `__spacegamesDebug`) exist only on
 the Vite dev server. The smoke runner therefore cannot target `pnpm preview`.
 Production preview needs ordinary browser interaction. Smoke coverage has limits:
 retro checks entry/return, Starship checks reaching debrief, and Intergalactic

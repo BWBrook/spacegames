@@ -76,7 +76,7 @@ async function step(page, frames = 1) {
 
 async function command(page, action, payload) {
   return page.evaluate(
-    ([nextAction, nextPayload]) => window.__vibeDebug?.command(nextAction, nextPayload),
+    ([nextAction, nextPayload]) => window.__spacegamesDebug?.command(nextAction, nextPayload),
     [action, payload],
   );
 }

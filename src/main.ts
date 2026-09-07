@@ -11,7 +11,7 @@ declare global {
   interface Window {
     render_game_to_text?: () => string;
     advanceTime?: (ms: number) => void;
-    __vibeDebug?: {
+    __spacegamesDebug?: {
       currentScene: () => string;
       snapshot: () => unknown;
       advanceTime: (ms: number) => unknown;
@@ -89,7 +89,7 @@ if (import.meta.env.DEV) {
   };
 
   window.render_game_to_text = () => JSON.stringify(snapshotState());
-  window.__vibeDebug = {
+  window.__spacegamesDebug = {
     currentScene: () => scenes.current(),
     snapshot: () => snapshotState(),
     advanceTime: (ms: number) => {

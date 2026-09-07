@@ -1,6 +1,6 @@
-# Vibe Game
+# Spacegames
 
-Vibe Game is a browser anthology of modern games re-imagined from the Usborne computer-game listings. Each entry has two lanes: a browser-native Retro BASIC recreation and an expanded TypeScript/Canvas version.
+Spacegames is a browser anthology of modern games re-imagined from the Usborne computer-game listings. Each entry has two lanes: a browser-native Retro BASIC recreation and an expanded TypeScript/Canvas version.
 
 ## Run It
 
@@ -24,3 +24,7 @@ The Playwright smoke runner accepts `starship-takeoff` and `intergalactic-games`
 ## Source
 
 The original BBC disk image is kept in `assets-src/Disc999-ComputerSpaceGamesUsborne.ssd`. Its repeatable, book-level extraction lives in `basic/bbc/usborne-computer-space-games/`; game manifests link to those files without copying them into per-game folders.
+
+## Looking for the Python port?
+
+This repository took over the `spacegames` name in September 2026. The earlier pure-Python recreation of the Usborne "Computer Spacegames" listings, previously at this URL, now lives at [BWBrook/spacegames-python](https://github.com/BWBrook/spacegames-python).

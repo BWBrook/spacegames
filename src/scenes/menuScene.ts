@@ -62,7 +62,7 @@ export function createMenuScene(ctx: SceneContext): Scene {
       g.fillStyle = '#8cf1ff';
       g.font = '600 42px "Space Mono", monospace';
       g.textAlign = 'left';
-      g.fillText('Vibe Game Anthology', 48, 80);
+      g.fillText('Spacegames Anthology', 48, 80);
 
       g.fillStyle = '#4ca6cb';
       g.font = '16px "Space Mono", monospace';
