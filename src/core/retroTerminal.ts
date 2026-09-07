@@ -82,6 +82,8 @@ export class RetroTerminal {
     const { stage, title, sourceLabel } = this.options;
     const g = stage.ctx;
     g.save();
+    g.textAlign = 'left';
+    g.textBaseline = 'alphabetic';
     g.fillStyle = '#020512';
     g.fillRect(0, 0, stage.width, stage.height);
     g.translate(32, 64);

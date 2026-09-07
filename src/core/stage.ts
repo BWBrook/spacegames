@@ -16,10 +16,11 @@ export class Stage {
 
   resize() {
     this.dpr = Math.max(1, window.devicePixelRatio || 1);
-    this.width = Math.floor(this.canvas.clientWidth * this.dpr);
-    this.height = Math.floor(this.canvas.clientHeight * this.dpr);
-    this.canvas.width = this.width;
-    this.canvas.height = this.height;
+    this.width = this.canvas.clientWidth;
+    this.height = this.canvas.clientHeight;
+    this.canvas.width = Math.floor(this.width * this.dpr);
+    this.canvas.height = Math.floor(this.height * this.dpr);
+    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     this.ctx.imageSmoothingEnabled = false;
   }
 
