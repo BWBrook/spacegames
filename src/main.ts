@@ -47,9 +47,9 @@ let last = performance.now();
 let manualClock = false;
 
 function stepSimulation(deltaSeconds: number) {
-  input.beginFrame();
   acc += deltaSeconds;
   while (acc >= STEP) {
+    input.beginFrame();
     scenes.update(STEP);
     acc -= STEP;
   }
