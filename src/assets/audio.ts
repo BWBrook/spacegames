@@ -5,6 +5,10 @@ export const audioCues = {
   'starship/warning': '/audio/sfx/starship/warning.wav',
   'starship/success': '/audio/sfx/starship/success.wav',
   'starship/failure': '/audio/sfx/starship/failure.wav',
+  'evil-alien/detonate': '/audio/sfx/starship/ignition.wav',
+  'evil-alien/hit': '/audio/sfx/starship/success.wav',
+  'evil-alien/fail': '/audio/sfx/starship/failure.wav',
+  'evil-alien/alarm': '/audio/sfx/starship/warning.wav',
 } as const;
 
 export type AudioCueId = keyof typeof audioCues;

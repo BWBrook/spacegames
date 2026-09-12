@@ -8,5 +8,9 @@
 | `starship/warning` | `SCIMisc_Ping 28_RSCPC_PX.wav` | Parallax | Resonant ping used for telemetry/event alerts. |
 | `starship/success` | `SCIMisc_Texture Small 03_RSCPC_PX.wav` | Parallax | First 5s clipped for debrief success sting. |
 | `starship/failure` | `DSGNSynth_Hit Large Tight 16_RSCPC_PX.wav` | Parallax | Punchy impact for failure screen. |
+| `evil-alien/detonate` | reuses `starship/ignition` | Sci-Fi Energy Weapons | Bomb detonation. |
+| `evil-alien/hit` | reuses `starship/success` | Parallax | `*BOOM*` debrief sting. |
+| `evil-alien/fail` | reuses `starship/failure` | Parallax | Out-of-bombs and captured debriefs. |
+| `evil-alien/alarm` | reuses `starship/warning` | Parallax | Proximity ping at 50%, 75%, 90%. |
 
 All material originates from the free **Sci-Fi Sound Effects** bundle on 99Sounds (Rescopic Sound, 24-bit/96 kHz WAV, royalty-free for commercial use). See https://99sounds.org/sci-fi-sounds/ for license terms. The original pack is not stored in this repo; the filenames above preserve provenance, while the playable derivatives live under `public/audio/`.

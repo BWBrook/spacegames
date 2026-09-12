@@ -4,7 +4,7 @@ import { chromium, webkit } from 'playwright';
 
 const DEFAULT_URL = 'http://127.0.0.1:5173';
 const BROWSERS = { chromium, webkit };
-const GAMES = new Set(['starship-takeoff', 'intergalactic-games']);
+const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien'];
 const MODES = new Set(['modern', 'retro']);
 
 function parseArgs(argv) {
@@ -43,8 +43,8 @@ function parseArgs(argv) {
     }
   }
 
-  if (!GAMES.has(args.game)) {
-    throw new Error(`Choose --game from: ${[...GAMES].join(', ')}`);
+  if (!GAMES.includes(args.game)) {
+    throw new Error(`Choose --game from: ${GAMES.join(', ')}`);
   }
   if (!MODES.has(args.mode)) {
     throw new Error('Choose --mode from: modern, retro');
@@ -87,7 +87,10 @@ async function openGame(page, args) {
   await page.click('#start');
   await page.waitForTimeout(120);
 
-  if (args.game === 'intergalactic-games') await page.keyboard.press('ArrowDown');
+  for (let i = 0; i < GAMES.indexOf(args.game); i += 1) {
+    await page.keyboard.press('ArrowDown');
+    await page.waitForTimeout(80);
+  }
   await page.keyboard.press('Enter');
   await page.waitForTimeout(80);
   if (args.mode === 'retro') await page.keyboard.press('ArrowRight');
@@ -209,6 +212,40 @@ async function runIntergalactic(page, args) {
   };
 }
 
+async function runEvilAlien(page, args) {
+  await page.screenshot({ path: path.join(args.outDir, '01-hunt.png') });
+  let game = gameSnapshot(await snapshot(page));
+  const t = game.target;
+  const miss = { x: (t.x + 3) % 10, y: (t.y + 3) % 10, d: (t.d + 3) % 10 };
+  await command(page, 'aim', miss);
+  await step(page, 2);
+  await page.keyboard.press('Enter');
+  for (let i = 0; i < 200; i += 1) {
+    await step(page);
+    game = gameSnapshot(await snapshot(page));
+    if (game.phase !== 'drop') break;
+  }
+  await step(page, 4);
+  await page.screenshot({ path: path.join(args.outDir, '02-scanner.png') });
+  await command(page, 'solve');
+  await step(page, 2);
+  await page.keyboard.press('Enter');
+  for (let i = 0; i < 200; i += 1) {
+    await step(page);
+    game = gameSnapshot(await snapshot(page));
+    if (game.phase === 'debrief') break;
+  }
+  await step(page, 6);
+  await page.screenshot({ path: path.join(args.outDir, '03-debrief.png') });
+  const current = await snapshot(page);
+  game = gameSnapshot(current);
+  return {
+    reachedDebrief: game.phase === 'debrief',
+    outcome: game.debrief?.outcome ?? null,
+    finalSnapshot: current,
+  };
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   fs.mkdirSync(args.outDir, { recursive: true });
@@ -229,7 +266,9 @@ async function main() {
       ? await runRetro(page, args)
       : args.game === 'starship-takeoff'
         ? await runStarship(page, args)
-        : await runIntergalactic(page, args);
+        : args.game === 'intergalactic-games'
+          ? await runIntergalactic(page, args)
+          : await runEvilAlien(page, args);
     report = { ...args, ...result, consoleErrors };
   } catch (error) {
     failure = error;
@@ -252,6 +291,9 @@ async function main() {
   }
   if (args.game === 'intergalactic-games' && args.mode === 'modern' && report.outcome !== 'success') {
     throw new Error(`Expected successful orbit; got ${report.outcome}`);
+  }
+  if (args.game === 'evil-alien' && args.mode === 'modern' && report.outcome !== 'destroyed') {
+    throw new Error(`Expected Elron destroyed; got ${report.outcome}`);
   }
 }
 
