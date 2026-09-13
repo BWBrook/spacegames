@@ -5,13 +5,14 @@
 - `src/main.ts` wires the canvas, input, audio, and `SceneManager`, while `src/style.css` defines the shared look.
 - `src/core/` houses reusable engine services (`stage`, `input`, `audio`, `sceneManager`); extend these instead of duplicating logic per game.
 - `src/games/manifest.ts` is the single registry. Each game lives in `src/games/<id>/index.ts`, exports `createGame(ctx)`, and relies on types from `src/games/types.ts`. If a BASIC emulator exists, add `retro.loader` in the manifest and ship a companion module at `src/games/<id>/retro.ts` exporting `createRetroGame(ctx)`.
-- `src/scenes/` handles high-level flows (`menuScene`, `gameplayScene`, future credits/debug). Keep scenes UI/state oriented and call `ctx.goto(...)` for transitions.
+- `src/scenes/` handles high-level flows. `landingScene` shows the HTML landing page in `src/landing/` (the canvas is idle while it is visible); `gameplayScene` loads and runs a lane on the canvas. Keep scenes UI/state oriented and call `ctx.goto(...)` for transitions; the landing scene is registered under the name `menu`.
 - `public/` serves static art/audio verbatim; reference files via absolute `/audio/...` or `/assets/...` paths.
 
 ## Build, Test, and Development Commands
 - `pnpm dev` — Vite dev server with HMR at http://localhost:5173 for day-to-day iteration.
 - `pnpm build` — `tsc --noEmit` plus `vite build`; fails fast on type issues and emits `dist/` assets.
 - `pnpm preview` — static preview of the production build; use before capturing footage or publishing.
+- `pnpm play` — build, serve on 127.0.0.1:4173, and open the browser; `tools/install-launcher.sh` wraps it in `~/Applications/Spacegames.app`.
 
 ## Coding Style & Naming Conventions
 - Stay within strict TypeScript; type every exported symbol, scene payload, and manifest entry.

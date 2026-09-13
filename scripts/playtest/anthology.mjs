@@ -83,18 +83,9 @@ async function command(page, action, payload) {
 
 async function openGame(page, args) {
   await page.goto(args.url, { waitUntil: 'networkidle' });
-  await page.waitForSelector('#start', { state: 'visible' });
-  await page.click('#start');
-  await page.waitForTimeout(120);
-
-  for (let i = 0; i < GAMES.indexOf(args.game); i += 1) {
-    await page.keyboard.press('ArrowDown');
-    await page.waitForTimeout(80);
-  }
-  await page.keyboard.press('Enter');
-  await page.waitForTimeout(80);
-  if (args.mode === 'retro') await page.keyboard.press('ArrowRight');
-  await page.keyboard.press('Enter');
+  const laneButton = `[data-game="${args.game}"] [data-mode="${args.mode}"]`;
+  await page.waitForSelector(laneButton, { state: 'visible' });
+  await page.click(laneButton);
 
   await page.waitForFunction(expectedGame => {
     if (typeof window.render_game_to_text !== 'function') return false;

@@ -6,10 +6,20 @@ Spacegames is a browser anthology of modern games re-imagined from the Usborne c
 
 ```sh
 pnpm install
-pnpm dev
+pnpm play
 ```
 
-Open the local Vite URL, choose a game, and select either lane. Build the production bundle with `pnpm build`.
+`pnpm play` builds the anthology, serves it on http://127.0.0.1:4173, and opens it in your browser. The landing page lists every game with two buttons: the original 1982 listing running in the browser, and the reimagining. `Esc` in a game returns to the landing page.
+
+For day-to-day development use `pnpm dev` and open the Vite URL. Build the production bundle alone with `pnpm build`.
+
+### Desktop launcher (macOS)
+
+```sh
+tools/install-launcher.sh
+```
+
+This creates `~/Applications/Spacegames.app`, which opens a Terminal window running `pnpm play`. Closing that window stops the server. Once the build is hosted somewhere, Safari's "Add to Dock" on that URL gives a server-free launcher instead.
 
 ## Checks
 

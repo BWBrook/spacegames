@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "play": "pnpm build && vite preview --host 127.0.0.1 --port 4173 --open",
     "extract:bbc": "python3 tools/extract_bbc_ssd.py assets-src/Disc999-ComputerSpaceGamesUsborne.ssd --out basic/bbc/usborne-computer-space-games",
     "playtest": "node scripts/playtest/anthology.mjs"
   },

@@ -5,7 +5,7 @@ export const games: GameManifestEntry[] = [
     id: 'starship-takeoff',
     title: 'Starship Take-Off',
     summary: 'Calibrate launch thrust to punch through unpredictable gravity wells.',
-    year: 1980,
+    year: 1982,
     difficulty: 'Easy',
     sources: [
       {
@@ -55,7 +55,7 @@ export const games: GameManifestEntry[] = [
     id: 'intergalactic-games',
     title: 'Intergalactic Games',
     summary: 'Tune angle, speed, and broadcast lock to win the orbital TV rights race.',
-    year: 1980,
+    year: 1982,
     difficulty: 'Medium',
     sources: [
       {

@@ -5,7 +5,7 @@ import { SceneManager } from './core/sceneManager';
 import { Stage } from './core/stage';
 import { games } from './games/manifest';
 import { createGameplayScene } from './scenes/gameplayScene';
-import { createMenuScene } from './scenes/menuScene';
+import { createLandingScene } from './scenes/landingScene';
 
 declare global {
   interface Window {
@@ -23,23 +23,24 @@ declare global {
 }
 
 const canvas = document.getElementById('stage') as HTMLCanvasElement;
-const gate = document.getElementById('gate')!;
-const startBtn = document.getElementById('start') as HTMLButtonElement;
 
 const stage = new Stage(canvas);
 const audio = new AudioManager();
 const input = new InputManager();
 const scenes = new SceneManager({ stage, audio, input, manifest: games });
 
-scenes.register('menu', createMenuScene);
-scenes.register('gameplay', createGameplayScene);
-scenes.goto('menu');
-
 function focusStage() {
   canvas.focus({ preventScroll: true });
 }
 
 canvas.addEventListener('pointerdown', focusStage);
+
+scenes.register('menu', createLandingScene);
+scenes.register('gameplay', (ctx) => {
+  requestAnimationFrame(focusStage);
+  return createGameplayScene(ctx);
+});
+scenes.goto('menu');
 
 const STEP = 1 / 60;
 let acc = 0;
@@ -104,16 +105,3 @@ if (import.meta.env.DEV) {
     },
   };
 }
-
-startBtn.addEventListener('click', async () => {
-  await audio.unlock();
-  startBtn.blur();
-  gate.classList.add('hidden');
-  requestAnimationFrame(focusStage);
-  try {
-    const beep = await audio.load('/audio/bleep.wav');
-    audio.play(beep, 0, 0.2);
-  } catch {
-    // optional asset; ignore if missing
-  }
-});
