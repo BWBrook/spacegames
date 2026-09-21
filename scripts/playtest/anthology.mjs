@@ -4,7 +4,7 @@ import { chromium, webkit } from 'playwright';
 
 const DEFAULT_URL = 'http://127.0.0.1:5173';
 const BROWSERS = { chromium, webkit };
-const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes', 'moonlander'];
+const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes', 'moonlander', 'monsters-of-galacticon'];
 const MODES = new Set(['modern', 'retro']);
 
 function parseArgs(argv) {
@@ -314,6 +314,60 @@ async function runMoonlander(page, args) {
   };
 }
 
+const GALACTICON_WEAPONS = ['R', 'S', 'T'];
+
+/** One observation fixes a row: kill, then the next weapon does nothing, then it eats. */
+function galacticonKiller(weapon, outcome) {
+  const shift = outcome === 'kill' ? 0 : outcome === 'noeffect' ? 2 : 1;
+  return GALACTICON_WEAPONS[(GALACTICON_WEAPONS.indexOf(weapon) + shift) % 3];
+}
+
+async function runGalacticon(page, args) {
+  await page.screenshot({ path: path.join(args.outDir, '01-approach.png') });
+  const learned = {};
+  let game = gameSnapshot(await snapshot(page));
+  let shotChoose = false;
+  let shotResolve = false;
+
+  for (let i = 0; i < 6000; i += 1) {
+    game = gameSnapshot(await snapshot(page));
+    if (game.phase === 'debrief') break;
+    if (game.phase === 'choose') {
+      if (!shotChoose) {
+        await page.screenshot({ path: path.join(args.outDir, '02-choose.png') });
+        shotChoose = true;
+      }
+      // Play it the way a person would: probe an unfamiliar monster, then rely
+      // on the rotation the first observation reveals.
+      await page.keyboard.press(learned[game.monster] ?? 'R');
+      await step(page, 2);
+      const after = gameSnapshot(await snapshot(page));
+      if (after.lastWeapon && after.lastOutcome) {
+        learned[after.monster] = galacticonKiller(after.lastWeapon, after.lastOutcome);
+      }
+      if (!shotResolve && after.lastOutcome && after.lastOutcome !== 'kill') {
+        await page.screenshot({ path: path.join(args.outDir, '03-miss.png') });
+        shotResolve = true;
+      }
+      continue;
+    }
+    await step(page);
+  }
+
+  await step(page, 4);
+  await page.screenshot({ path: path.join(args.outDir, '04-debrief.png') });
+  const current = await snapshot(page);
+  game = gameSnapshot(current);
+  return {
+    reachedDebrief: game.phase === 'debrief',
+    survived: game.debrief?.survived ?? null,
+    kills: game.debrief?.kills ?? null,
+    crewLeft: game.debrief?.crewLeft ?? null,
+    learnedCount: Object.keys(learned).length,
+    finalSnapshot: current,
+  };
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   fs.mkdirSync(args.outDir, { recursive: true });
@@ -340,7 +394,9 @@ async function main() {
             ? await runEvilAlien(page, args)
             : args.game === 'beat-the-bug-eyes'
               ? await runBugEyes(page, args)
-              : await runMoonlander(page, args);
+              : args.game === 'moonlander'
+                ? await runMoonlander(page, args)
+                : await runGalacticon(page, args);
     report = { ...args, ...result, consoleErrors };
   } catch (error) {
     failure = error;
@@ -366,6 +422,12 @@ async function main() {
   }
   if (args.game === 'evil-alien' && args.mode === 'modern' && report.outcome !== 'destroyed') {
     throw new Error(`Expected Elron destroyed; got ${report.outcome}`);
+  }
+  if (args.game === 'monsters-of-galacticon' && args.mode === 'modern') {
+    // Probing once then following the rotation cannot lose: at most four probes,
+    // at most one crew member each, out of five.
+    if (!report.survived) throw new Error(`Expected survival; crew left ${report.crewLeft}`);
+    if (report.crewLeft < 1) throw new Error('Survived with no crew, which is impossible');
   }
   if (args.game === 'moonlander' && args.mode === 'modern') {
     if (report.outcome !== 'good') {

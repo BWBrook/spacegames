@@ -19,5 +19,9 @@
 | `moonlander/thrust` | reuses `starship/prep-ambience` | Parallax | Looped descent burn, gain tracks the throttle. |
 | `moonlander/touchdown` | reuses `starship/success` | Parallax | Landing sting. |
 | `moonlander/crash` | reuses `starship/failure` | Parallax | Impact. |
+| `galacticon/approach` | reuses `starship/warning` | Parallax | A monster arriving. |
+| `galacticon/kill` | reuses `starship/ignition` | Sci-Fi Energy Weapons | Weapon that works. |
+| `galacticon/nothing` | reuses `starship/vent` | Sci-Fi Energy Weapons | Weapon that does nothing. |
+| `galacticon/loss` | reuses `starship/failure` | Parallax | Losing a member of the group. |
 
 All material originates from the free **Sci-Fi Sound Effects** bundle on 99Sounds (Rescopic Sound, 24-bit/96 kHz WAV, royalty-free for commercial use). See https://99sounds.org/sci-fi-sounds/ for license terms. The original pack is not stored in this repo; the filenames above preserve provenance, while the playable derivatives live under `public/audio/`.

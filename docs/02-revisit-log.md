@@ -9,6 +9,8 @@ Things worth doing to games already built, noticed while building later ones. No
 - **Debrief panels.** Intergalactic, Evil Alien, Beat The Bug Eyes and Moonlander all draw a centred bordered panel with a headline, a summary line, a statistics line and a "press Enter" footer. The layout maths is copied four times.
 - **Phase state machines.** Each modern lane hand-rolls `phase` plus `phaseElapsed` and has hit the same TypeScript narrowing problem, where calling a function that mutates `state.phase` leaves the compiler thinking it cannot have changed. Worked around locally in Bug Eyes and Moonlander by widening to the phase union. A shared tiny phase helper would fix it once.
 
+- **Monster and creature art.** Galacticon's four monsters are drawn from primitives and one of them reads as a rounded rectangle rather than a creature. Worth a pass once the anthology is complete and there is a house style to match.
+
 ## Loose ends
 
 - `public/audio/bleep.wav` has been unreferenced since the Start gate was replaced by the landing page. Delete it, or give it a use.

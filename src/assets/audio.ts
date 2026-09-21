@@ -16,6 +16,10 @@ export const audioCues = {
   'moonlander/thrust': '/audio/sfx/starship/prep-ambience.ogg',
   'moonlander/touchdown': '/audio/sfx/starship/success.wav',
   'moonlander/crash': '/audio/sfx/starship/failure.wav',
+  'galacticon/approach': '/audio/sfx/starship/warning.wav',
+  'galacticon/kill': '/audio/sfx/starship/ignition.wav',
+  'galacticon/nothing': '/audio/sfx/starship/vent.wav',
+  'galacticon/loss': '/audio/sfx/starship/failure.wav',
 } as const;
 
 export type AudioCueId = keyof typeof audioCues;

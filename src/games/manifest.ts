@@ -223,4 +223,47 @@ export const games: GameManifestEntry[] = [
       loader: () => import('./moonlander/retro'),
     },
   },
+  {
+    id: 'monsters-of-galacticon',
+    title: 'Monsters of Galacticon',
+    summary: 'Four monsters, three weapons, five of you. Learn which is which before they eat you.',
+    year: 1982,
+    difficulty: 'Medium',
+    sources: [
+      {
+        id: 'galacticon-bbc-intro',
+        label: 'BBC Micro intro',
+        path: 'basic/bbc/usborne-computer-space-games/06.bas',
+        platform: 'bbc-micro',
+        role: 'intro',
+        dfsName: '$.06',
+      },
+      {
+        id: 'galacticon-bbc-game',
+        label: 'BBC Micro game',
+        path: 'basic/bbc/usborne-computer-space-games/06MOG.bas',
+        platform: 'bbc-micro',
+        role: 'game',
+        dfsName: '$.06MOG',
+      },
+      {
+        id: 'usborne-spacegames-ssd',
+        label: 'Usborne Computer Space Games DFS disk image',
+        path: 'assets-src/Disc999-ComputerSpaceGamesUsborne.ssd',
+        platform: 'bbc-dfs',
+        role: 'disk-image',
+      },
+      {
+        id: 'usborne-spacegames-catalog',
+        label: 'Extracted DFS catalogue',
+        path: 'basic/bbc/usborne-computer-space-games/catalog.json',
+        platform: 'bbc-dfs',
+        role: 'catalog',
+      },
+    ],
+    loader: () => import('./monsters-of-galacticon'),
+    retro: {
+      loader: () => import('./monsters-of-galacticon/retro'),
+    },
+  },
 ];

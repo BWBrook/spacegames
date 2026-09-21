@@ -1,0 +1,101 @@
+# Field Notes
+
+A running ledger of what each original listing turns out to be once you read it closely: the structure hiding under the BASIC, the quirks worth knowing, and what the two lanes do about them. Written to be read, and to be quarried later for in-game help text.
+
+The per-game design documents cover implementation. This file is for the findings.
+
+---
+
+## 1. Starship Take-Off
+
+**What it really is.** A binary search, dressed as physics. The listing rolls `G` from 0 to 19 and `W` from 0 to 39, sets the answer to `G*W`, then prints only `G`. The weight is never shown and never mentioned, so there is no sum to do. The intro is honest about this where the title is not: "You must **guess** the force required for a successful take off."
+
+**The tuning is exact.** The answer lies between 0 and 741, and the listing gives ten tries. Ten halvings distinguish 1024 possibilities. The budget is precisely enough for a disciplined binary search and not one guess more, which is very unlikely to be an accident.
+
+**Quirks.**
+- When gravity rolls 0 the answer is 0 whatever the weight, so `GRAVITY= 0` is a free win on the first guess. It happens one run in twenty.
+- Multiples of the displayed gravity are the only possible answers, which cuts the real search space by a factor of `G` for a player who notices. At `GRAVITY= 19` there are only 40 candidates, and six guesses suffice.
+- On the tenth and final guess the listing still prints `TOO HIGH` or `TOO LOW`, just without the `, TRY AGAIN`, so the game tells you which way you were wrong as it kills you.
+
+---
+
+## 2. Intergalactic Games
+
+**What it really is.** A two-axis binary search under a tight budget. A target height from 1 to 100 is shown, and the hidden answers are `angle = ATN(H/3)` in degrees and `speed = 3000 * SQR(H + 1/H)`. Neither formula appears anywhere in the book text, so the player is searching, not calculating.
+
+**The tuning is tight but fair.** Each attempt returns an independent verdict on both axes, so eight attempts buy eight bits on each. The angle spans about 70 degrees with a tolerance of 2, needing roughly five bits. The speed spans about 4,200 to 30,000 with a tolerance of 100, needing about seven. Eight attempts is just enough to binary search both at once, and is hopeless for anyone adjusting one variable at a time.
+
+**Quirks.**
+- The listing writes `3.14159` where it means pi. The resulting angle is off by about one part in a million, which is far inside the 2-degree tolerance and so has no effect on play. It is a period detail rather than a bug.
+- The credit bonus is `INT(1000/G)` where `G` is the loop counter, so it is genuinely 1000 divided by the attempt number, and winning on the first attempt pays ten times what winning on the tenth would.
+
+---
+
+## 3. Evil Alien
+
+**What it really is.** A three-dimensional ternary search with a budget that exactly fits. Elron hides at a random point in a 10 by 10 by 10 grid and you have four bombs. Each miss reports north or south, east or west, and too far or not far enough, independently. Three probes halve each axis down to a single value and the fourth bomb lands. A player who searches properly cannot lose.
+
+**Quirks.**
+- The compass words are concatenated with no separator, so a miss that is both north and east prints `NORTHEAST` as one word. This is printing, not a compass bearing.
+- A shot with the right X and Y but the wrong distance prints a bare `SHOT WAS ` with nothing after it, because neither compass test fires. It looks like a bug and is in fact the most informative message in the game.
+- The listing does no range checking on the typed numbers.
+
+**What the lanes do.** The retro lane reproduces all of it including the bare `SHOT WAS `. The reimagined lane keeps the identical rules and adds a scanner that shades out the ruled-out rows, columns and depth bands, so the player still reasons but the display does the bookkeeping. Elron creeping closer on a timer is an addition, taken from the intro's own threat, and gives a stake to dithering that the original lacks.
+
+---
+
+## 4. Beat The Bug Eyes
+
+**What it really is.** A reaction test with four positions and a one-shot rule. Ten bugs appear in turn at one of four fixed screen spots and you press the matching number key.
+
+**Three rules are easy to miss, and all three matter.**
+- Only the first keypress counts. The polling loop exits the moment any key is struck.
+- Any non-matching key misses exactly as a timeout does, because the test is `VAL("0"+R$)<>R`, which treats a letter and an empty string alike.
+- A key struck while the bug is still hidden sits in the machine's keyboard buffer and is returned by the first poll of the window. Mashing early spends your shot on a bug you have not seen.
+
+**Timing, and what had to be interpreted.** The reaction window is exact: `INKEY$(1)` waits one centisecond and is polled 150 times, so 1.5 seconds. The delay before the bug appears and the pause after a hit are empty `FOR` loops whose real duration depended on the machine, and the book targeted everything from a ZX81 upward. We read one iteration as 1/250 of a second, which puts the delay at 0.8 to 2.0 seconds and the flash at 1.2. That constant is the only invented number in the lane.
+
+**What the lanes do.** The retro lane needed to print at a row and column rather than scroll a prompt, which is why `RetroScreen` exists alongside `RetroTerminal`. The reimagined lane keeps all three rules and dramatises the intro's line about the bugs hemming you in: every missed bug creeps its outcrop closer and three misses at one rock ends the run.
+
+---
+
+## 5. Moonlander
+
+**What it really is.** A fuel budget that is secretly a time budget. Gravity adds 5 to your speed every turn and every unit of burn removes one, so the fuel spent over a flight of `T` turns is `50 + 5T` less whatever speed you still carry at touchdown. The tank holds 120. **You have about fourteen turns of flight, however you choose to spend them.** Hovering to think is the most expensive thing in the game. Neither the book nor the listing says this anywhere; it falls out of the arithmetic.
+
+A minimum-time descent, falling freely then braking hard and late, is on the ground in about nine turns with a quarter of the tank unspent. A search over integer burn sequences confirms the game is winnable with real margin: `3 1 0 0 0 10 21 21 21 22 6` touches down at 0.5 and leaves 16 fuel.
+
+**Quirks.**
+- The good-landing test is `IF V1<=1`, with no lower bound, so a touchdown speed of −8.5 is congratulated. A player who arrives while still climbing is told `GOOD LANDING.`. Just under a third of all good landings reachable in the listing are ascending ones.
+- The listing diverts to the landing code when the fall exactly equals the height remaining, and the interpolation there then uses the height and velocity from *before* the turn instead of after. Falling freely for six turns and then burning 30 twice arrives exactly on the surface and is scored as a crash at 35.7, when the lander was doing 55 at a height of 42.5 a moment earlier. This is reachable in ordinary play, not a corner case.
+- If velocity were zero at the interpolation the listing would divide by zero. It cannot happen on the path that reaches that line, but nothing in the code prevents it.
+
+**What the lanes do.** The retro lane reproduces both quirks and was differentially tested against a direct transcription of the listing over four thousand random burn sequences, matching turn for turn. The reimagined lane flies the same constants continuously and cannot reproduce the ascending-landing quirk, because in continuous flight you do not reach the ground while moving away from it. Its throttle gauge marks the hover point at 5, which is the intro's own sentence about a burn of 5 holding your speed, drawn rather than stated.
+
+---
+
+## 6. Monsters of Galacticon
+
+**What it really is.** A rotation, hidden behind two lines of arithmetic. `ASC(R$)-81` turns the weapon letter into 1, 2 or 3; the monster's slot is added; and the result is folded back into 1 to 3, where 2 kills, 3 does nothing and anything else costs a crew member.
+
+**The consequence the book never states.** Because the fold is a rotation, the outcomes always sit in the same cyclic order. For any monster the weapon after the killing one does nothing, and the one after that gets someone eaten, cycling R to S to T. **One observation therefore fixes the whole row.** Over 40,000 simulated runs, guessing at random survives 70 per cent of the time, remembering what you already tried survives 92 per cent, and using the rotation survives every time without exception. It provably cannot fail, since at most four probes are needed and each costs at most one of five.
+
+**Quirks.**
+- The listing only works on a machine where a true comparison is −1, as on the BBC and the Commodore and Apple machines. Read with +1 for true, as a Sinclair would, two of the four monsters become unkillable by any weapon. The book was sold for both.
+- Slots 1 and 4 resolve identically, so two of the four names always share an answer. There are four monsters but three puzzles.
+- The shuffle is four swaps of a randomly chosen pair, and the pair can be the same slot twice. The names come out in their original order 6.8 per cent of the time against 4.2 per cent for a fair shuffle.
+- Any input that is not R, S or T falls through to the eaten branch, and an empty line does too. On real hardware this almost never bit anyone, because the BBC Micro powered up with CAPS LOCK on.
+
+**What the lanes do.** The retro lane reproduces all of it, uppercasing input as a real BBC keyboard would. The reimagined lane keeps the rules exactly and adds a field journal that records observations without applying the rotation, because working that out is the game. The debrief reveals what each monster needed, which is the intended route to the discovery.
+
+---
+
+## Patterns across the anthology so far
+
+**The budget is always exactly enough.** Ten guesses for a 742-wide binary search, eight attempts for two axes needing five and seven bits, four bombs for three ternary searches, fourteen turns of fuel for a nine-turn descent. Whoever tuned these listings tuned them carefully, and the margin is consistently thin enough to punish sloppiness and wide enough to reward method.
+
+**The intros know things the listings do not say.** Starship's intro admits you are guessing. Moonlander's states the hover rule that the arithmetic only implies. Evil Alien's and Beat The Bug Eyes' both describe a closing threat that the listing never implements, which is where both reimagined lanes found their expansion.
+
+**Most of these are search problems wearing costumes.** Five of the first six reduce to searching a space under a budget. The presentation differs wildly and the underlying activity barely does.
+
+**Two of them hide a structure that collapses the search.** Moonlander's fuel is secretly a clock, and Galacticon's weapon table is secretly a rotation. In both cases a player who sees it stops playing the stated game and starts playing a much easier one. Neither the listing nor the book says a word about either.
