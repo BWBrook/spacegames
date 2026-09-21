@@ -13,6 +13,9 @@ export const audioCues = {
   'bug-eyes/miss': '/audio/sfx/starship/vent.wav',
   'bug-eyes/caught': '/audio/sfx/starship/failure.wav',
   'bug-eyes/debrief': '/audio/sfx/starship/success.wav',
+  'moonlander/thrust': '/audio/sfx/starship/prep-ambience.ogg',
+  'moonlander/touchdown': '/audio/sfx/starship/success.wav',
+  'moonlander/crash': '/audio/sfx/starship/failure.wav',
 } as const;
 
 export type AudioCueId = keyof typeof audioCues;

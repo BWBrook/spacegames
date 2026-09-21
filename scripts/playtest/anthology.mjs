@@ -4,7 +4,7 @@ import { chromium, webkit } from 'playwright';
 
 const DEFAULT_URL = 'http://127.0.0.1:5173';
 const BROWSERS = { chromium, webkit };
-const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes'];
+const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes', 'moonlander'];
 const MODES = new Set(['modern', 'retro']);
 
 function parseArgs(argv) {
@@ -276,6 +276,44 @@ async function runBugEyes(page, args) {
   };
 }
 
+async function runMoonlander(page, args) {
+  await page.screenshot({ path: path.join(args.outDir, '01-descent.png') });
+  let game = gameSnapshot(await snapshot(page));
+  const GRAVITY = 5;
+  const TARGET = 0.5;
+  let shotFreefall = false;
+
+  for (let i = 0; i < 6000; i += 1) {
+    game = gameSnapshot(await snapshot(page));
+    if (game.phase !== 'descent') break;
+    // Coast until the shortfall is steep enough to need near-maximum thrust,
+    // then hold the exact deceleration that arrives at TARGET.
+    const need = GRAVITY
+      + (game.velocity * game.velocity - TARGET * TARGET) / (2 * Math.max(game.height, 1e-6));
+    const throttle = need >= 24 ? Math.min(30, need) : 0;
+    await command(page, 'setThrottle', throttle);
+    if (!shotFreefall && i === 60) {
+      await page.screenshot({ path: path.join(args.outDir, '02-freefall.png') });
+      shotFreefall = true;
+    }
+    await step(page);
+  }
+
+  await page.screenshot({ path: path.join(args.outDir, '03-touchdown.png') });
+  for (let i = 0; i < 400 && gameSnapshot(await snapshot(page)).phase !== 'debrief'; i += 1) await step(page);
+  await step(page, 4);
+  await page.screenshot({ path: path.join(args.outDir, '04-debrief.png') });
+  const current = await snapshot(page);
+  game = gameSnapshot(current);
+  return {
+    reachedDebrief: game.phase === 'debrief',
+    outcome: game.debrief?.verdict ?? null,
+    touchdown: game.debrief?.touchdownVelocity ?? null,
+    fuelLeft: game.debrief?.fuelLeft ?? null,
+    finalSnapshot: current,
+  };
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   fs.mkdirSync(args.outDir, { recursive: true });
@@ -300,7 +338,9 @@ async function main() {
           ? await runIntergalactic(page, args)
           : args.game === 'evil-alien'
             ? await runEvilAlien(page, args)
-            : await runBugEyes(page, args);
+            : args.game === 'beat-the-bug-eyes'
+              ? await runBugEyes(page, args)
+              : await runMoonlander(page, args);
     report = { ...args, ...result, consoleErrors };
   } catch (error) {
     failure = error;
@@ -326,6 +366,13 @@ async function main() {
   }
   if (args.game === 'evil-alien' && args.mode === 'modern' && report.outcome !== 'destroyed') {
     throw new Error(`Expected Elron destroyed; got ${report.outcome}`);
+  }
+  if (args.game === 'moonlander' && args.mode === 'modern') {
+    if (report.outcome !== 'good') {
+      throw new Error(`Expected a good landing; got ${report.outcome} at ${report.touchdown}`);
+    }
+    // A clean descent should leave real margin, not scrape in on fumes.
+    if (report.fuelLeft < 15) throw new Error(`Expected fuel to spare; only ${report.fuelLeft} left`);
   }
   if (args.game === 'beat-the-bug-eyes' && args.mode === 'modern') {
     if (report.outcome !== 'escaped') throw new Error(`Expected escape; got ${report.outcome}`);
