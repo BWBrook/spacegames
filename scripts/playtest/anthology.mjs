@@ -4,7 +4,7 @@ import { chromium, webkit } from 'playwright';
 
 const DEFAULT_URL = 'http://127.0.0.1:5173';
 const BROWSERS = { chromium, webkit };
-const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien'];
+const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes'];
 const MODES = new Set(['modern', 'retro']);
 
 function parseArgs(argv) {
@@ -237,6 +237,45 @@ async function runEvilAlien(page, args) {
   };
 }
 
+async function runBugEyes(page, args) {
+  await page.screenshot({ path: path.join(args.outDir, '01-lurk.png') });
+  let game = gameSnapshot(await snapshot(page));
+  let exposedShot = false;
+  let missedOne = false;
+
+  for (let i = 0; i < 4000; i += 1) {
+    game = gameSnapshot(await snapshot(page));
+    if (game.phase === 'debrief') break;
+    if (game.phase === 'exposed') {
+      if (!exposedShot) {
+        await page.screenshot({ path: path.join(args.outDir, '02-exposed.png') });
+        exposedShot = true;
+      }
+      // Miss the first bug on purpose to prove the outcrop creeps closer, then
+      // blast the rest to reach the escape debrief.
+      if (!missedOne) {
+        missedOne = true;
+        const wrong = (game.activeKey % 4) + 1;
+        await page.keyboard.press(String(wrong));
+      } else {
+        await page.keyboard.press(String(game.activeKey));
+      }
+    }
+    await step(page);
+  }
+
+  await step(page, 4);
+  await page.screenshot({ path: path.join(args.outDir, '03-debrief.png') });
+  const current = await snapshot(page);
+  game = gameSnapshot(current);
+  return {
+    reachedDebrief: game.phase === 'debrief',
+    outcome: game.debrief?.outcome ?? null,
+    blasted: game.blasted,
+    finalSnapshot: current,
+  };
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   fs.mkdirSync(args.outDir, { recursive: true });
@@ -259,7 +298,9 @@ async function main() {
         ? await runStarship(page, args)
         : args.game === 'intergalactic-games'
           ? await runIntergalactic(page, args)
-          : await runEvilAlien(page, args);
+          : args.game === 'evil-alien'
+            ? await runEvilAlien(page, args)
+            : await runBugEyes(page, args);
     report = { ...args, ...result, consoleErrors };
   } catch (error) {
     failure = error;
@@ -285,6 +326,10 @@ async function main() {
   }
   if (args.game === 'evil-alien' && args.mode === 'modern' && report.outcome !== 'destroyed') {
     throw new Error(`Expected Elron destroyed; got ${report.outcome}`);
+  }
+  if (args.game === 'beat-the-bug-eyes' && args.mode === 'modern') {
+    if (report.outcome !== 'escaped') throw new Error(`Expected escape; got ${report.outcome}`);
+    if (report.blasted !== 9) throw new Error(`Expected 9 blasted after one deliberate miss; got ${report.blasted}`);
   }
 }
 

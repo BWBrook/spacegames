@@ -137,4 +137,47 @@ export const games: GameManifestEntry[] = [
       loader: () => import('./evil-alien/retro'),
     },
   },
+  {
+    id: 'beat-the-bug-eyes',
+    title: 'Beat The Bug Eyes',
+    summary: 'Ten space bugs peer from four rocks. Blast each one before it edges closer.',
+    year: 1982,
+    difficulty: 'Easy',
+    sources: [
+      {
+        id: 'bug-eyes-bbc-intro',
+        label: 'BBC Micro intro',
+        path: 'basic/bbc/usborne-computer-space-games/04.bas',
+        platform: 'bbc-micro',
+        role: 'intro',
+        dfsName: '$.04',
+      },
+      {
+        id: 'bug-eyes-bbc-game',
+        label: 'BBC Micro game',
+        path: 'basic/bbc/usborne-computer-space-games/04BE.bas',
+        platform: 'bbc-micro',
+        role: 'game',
+        dfsName: '$.04BE',
+      },
+      {
+        id: 'usborne-spacegames-ssd',
+        label: 'Usborne Computer Space Games DFS disk image',
+        path: 'assets-src/Disc999-ComputerSpaceGamesUsborne.ssd',
+        platform: 'bbc-dfs',
+        role: 'disk-image',
+      },
+      {
+        id: 'usborne-spacegames-catalog',
+        label: 'Extracted DFS catalogue',
+        path: 'basic/bbc/usborne-computer-space-games/catalog.json',
+        platform: 'bbc-dfs',
+        role: 'catalog',
+      },
+    ],
+    loader: () => import('./beat-the-bug-eyes'),
+    retro: {
+      loader: () => import('./beat-the-bug-eyes/retro'),
+    },
+  },
 ];
