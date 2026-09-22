@@ -266,4 +266,47 @@ export const games: GameManifestEntry[] = [
       loader: () => import('./monsters-of-galacticon/retro'),
     },
   },
+  {
+    id: 'alien-snipers',
+    title: 'Alien Snipers',
+    summary: 'Your radar is jammed. Decode each false reading and fire before the sniper moves.',
+    year: 1982,
+    difficulty: 'Medium',
+    sources: [
+      {
+        id: 'snipers-bbc-intro',
+        label: 'BBC Micro intro',
+        path: 'basic/bbc/usborne-computer-space-games/07.bas',
+        platform: 'bbc-micro',
+        role: 'intro',
+        dfsName: '$.07',
+      },
+      {
+        id: 'snipers-bbc-game',
+        label: 'BBC Micro game',
+        path: 'basic/bbc/usborne-computer-space-games/07AS.bas',
+        platform: 'bbc-micro',
+        role: 'game',
+        dfsName: '$.07AS',
+      },
+      {
+        id: 'usborne-spacegames-ssd',
+        label: 'Usborne Computer Space Games DFS disk image',
+        path: 'assets-src/Disc999-ComputerSpaceGamesUsborne.ssd',
+        platform: 'bbc-dfs',
+        role: 'disk-image',
+      },
+      {
+        id: 'usborne-spacegames-catalog',
+        label: 'Extracted DFS catalogue',
+        path: 'basic/bbc/usborne-computer-space-games/catalog.json',
+        platform: 'bbc-dfs',
+        role: 'catalog',
+      },
+    ],
+    loader: () => import('./alien-snipers'),
+    retro: {
+      loader: () => import('./alien-snipers/retro'),
+    },
+  },
 ];

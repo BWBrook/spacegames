@@ -4,7 +4,7 @@ import { chromium, webkit } from 'playwright';
 
 const DEFAULT_URL = 'http://127.0.0.1:5173';
 const BROWSERS = { chromium, webkit };
-const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes', 'moonlander', 'monsters-of-galacticon'];
+const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes', 'moonlander', 'monsters-of-galacticon', 'alien-snipers'];
 const MODES = new Set(['modern', 'retro']);
 
 function parseArgs(argv) {
@@ -368,6 +368,57 @@ async function runGalacticon(page, args) {
   };
 }
 
+async function runSnipers(page, args) {
+  await page.screenshot({ path: path.join(args.outDir, '01-briefing.png') });
+  await command(page, 'setDifficulty', 6);
+  await step(page, 2);
+  await page.keyboard.press('Enter');
+  await step(page, 2);
+
+  let game = gameSnapshot(await snapshot(page));
+  let missedOne = false;
+  let shotTarget = false;
+  let shotReport = false;
+
+  for (let i = 0; i < 6000; i += 1) {
+    game = gameSnapshot(await snapshot(page));
+    if (game.phase === 'debrief') break;
+    if (game.phase === 'target') {
+      if (!shotTarget) {
+        await page.screenshot({ path: path.join(args.outDir, '02-target.png') });
+        shotTarget = true;
+      }
+      // Miss the first one deliberately, so the report panel and the miss path
+      // both get exercised, then decode the rest correctly.
+      const answer = game.target.answer;
+      const key = missedOne
+        ? answer
+        : String.fromCharCode(((answer.charCodeAt(0) - 65 + 1) % 26) + 65);
+      missedOne = true;
+      await page.keyboard.press(key);
+      await step(page, 2);
+      if (!shotReport) {
+        await page.screenshot({ path: path.join(args.outDir, '03-report.png') });
+        shotReport = true;
+      }
+      continue;
+    }
+    await step(page);
+  }
+
+  await step(page, 4);
+  await page.screenshot({ path: path.join(args.outDir, '04-debrief.png') });
+  const current = await snapshot(page);
+  game = gameSnapshot(current);
+  return {
+    reachedDebrief: game.phase === 'debrief',
+    hits: game.debrief?.hits ?? null,
+    difficulty: game.debrief?.difficulty ?? null,
+    bestStreak: game.debrief?.bestStreak ?? null,
+    finalSnapshot: current,
+  };
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   fs.mkdirSync(args.outDir, { recursive: true });
@@ -396,7 +447,9 @@ async function main() {
               ? await runBugEyes(page, args)
               : args.game === 'moonlander'
                 ? await runMoonlander(page, args)
-                : await runGalacticon(page, args);
+                : args.game === 'monsters-of-galacticon'
+                  ? await runGalacticon(page, args)
+                  : await runSnipers(page, args);
     report = { ...args, ...result, consoleErrors };
   } catch (error) {
     failure = error;
@@ -422,6 +475,11 @@ async function main() {
   }
   if (args.game === 'evil-alien' && args.mode === 'modern' && report.outcome !== 'destroyed') {
     throw new Error(`Expected Elron destroyed; got ${report.outcome}`);
+  }
+  if (args.game === 'alien-snipers' && args.mode === 'modern') {
+    if (report.difficulty !== 6) throw new Error(`Expected difficulty 6; got ${report.difficulty}`);
+    if (report.hits !== 9) throw new Error(`Expected 9 hits after one deliberate miss; got ${report.hits}`);
+    if (report.bestStreak !== 9) throw new Error(`Expected a streak of 9; got ${report.bestStreak}`);
   }
   if (args.game === 'monsters-of-galacticon' && args.mode === 'modern') {
     // Probing once then following the rotation cannot lose: at most four probes,

@@ -23,5 +23,8 @@
 | `galacticon/kill` | reuses `starship/ignition` | Sci-Fi Energy Weapons | Weapon that works. |
 | `galacticon/nothing` | reuses `starship/vent` | Sci-Fi Energy Weapons | Weapon that does nothing. |
 | `galacticon/loss` | reuses `starship/failure` | Parallax | Losing a member of the group. |
+| `snipers/fire` | reuses `starship/ignition` | Sci-Fi Energy Weapons | Laser hit. |
+| `snipers/miss` | reuses `starship/vent` | Sci-Fi Energy Weapons | Missed shot. |
+| `snipers/report` | reuses `starship/success` | Parallax | Gunnery report. |
 
 All material originates from the free **Sci-Fi Sound Effects** bundle on 99Sounds (Rescopic Sound, 24-bit/96 kHz WAV, royalty-free for commercial use). See https://99sounds.org/sci-fi-sounds/ for license terms. The original pack is not stored in this repo; the filenames above preserve provenance, while the playable derivatives live under `public/audio/`.

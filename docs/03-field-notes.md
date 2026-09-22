@@ -90,6 +90,25 @@ A minimum-time descent, falling freely then braking hard and late, is on the gro
 
 ---
 
+## 7. Alien Snipers
+
+**What it really is.** A Caesar-shift drill against a clock. You get a letter and a number, count that many letters on, and type the one you land on, ten times.
+
+**One quietly good piece of design.** The letter is drawn from A to `CHR$(90-D)` and the shift from 1 to `D`, so the answer can never run past Z and the listing needs no wraparound. The cost is that the late alphabet disappears as difficulty rises: A to Y at the easiest setting, only A to P at the hardest.
+
+**Difficulty buys time as well as spending it.** The window is `200 + D*50` centiseconds, so 2.5 seconds at 1 and 7 at 10. Since the expected shift is `(D+1)/2`, the time per letter you actually have to count falls from 2.5 seconds to about 1.27 across the whole range. The setting is far gentler than the number implies.
+
+**Its real flaw.** The listing scores in total silence. A hit increments a variable, the screen clears, and the next target appears with no pause and no message. You fire ten times into the dark and find out at the end. Of the seven originals read so far this is the one clear design failure rather than a quirk, and it is the whole reason the reimagined lane exists.
+
+**Quirks.**
+- One shot per sniper, taken by any key, so a stray press spends it. A key struck during the previous round is buffered and consumed the moment the next target appears, exactly as in Beat The Bug Eyes.
+- A rejected difficulty jumps back to the `INPUT` rather than the prompt, producing a bare `?` with no explanation.
+- A wrong letter and a timeout score identically, so there is never a reason to hold fire.
+
+**What the lanes do.** The retro lane reproduces the silence, which is the point of having a faithful lane at all. The reimagined lane reports every shot, draws the shift twice over as an arc on the scope and a path along an alphabet strip, and breaks final accuracy down by code number so a player can see exactly where their counting fails.
+
+---
+
 ## Patterns across the anthology so far
 
 **The budget is always exactly enough.** Ten guesses for a 742-wide binary search, eight attempts for two axes needing five and seven bits, four bombs for three ternary searches, fourteen turns of fuel for a nine-turn descent. Whoever tuned these listings tuned them carefully, and the margin is consistently thin enough to punish sloppiness and wide enough to reward method.
@@ -97,5 +116,7 @@ A minimum-time descent, falling freely then braking hard and late, is on the gro
 **The intros know things the listings do not say.** Starship's intro admits you are guessing. Moonlander's states the hover rule that the arithmetic only implies. Evil Alien's and Beat The Bug Eyes' both describe a closing threat that the listing never implements, which is where both reimagined lanes found their expansion.
 
 **Most of these are search problems wearing costumes.** Five of the first six reduce to searching a space under a budget. The presentation differs wildly and the underlying activity barely does.
+
+**One of them is simply broken, and it is not a quirk.** Alien Snipers never tells you whether you hit. Everything else in the anthology at least closes the loop, however tersely. That single omission is the difference between a game and a test.
 
 **Two of them hide a structure that collapses the search.** Moonlander's fuel is secretly a clock, and Galacticon's weapon table is secretly a rotation. In both cases a player who sees it stops playing the stated game and starts playing a much easier one. Neither the listing nor the book says a word about either.

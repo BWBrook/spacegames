@@ -20,6 +20,9 @@ export const audioCues = {
   'galacticon/kill': '/audio/sfx/starship/ignition.wav',
   'galacticon/nothing': '/audio/sfx/starship/vent.wav',
   'galacticon/loss': '/audio/sfx/starship/failure.wav',
+  'snipers/fire': '/audio/sfx/starship/ignition.wav',
+  'snipers/miss': '/audio/sfx/starship/vent.wav',
+  'snipers/report': '/audio/sfx/starship/success.wav',
 } as const;
 
 export type AudioCueId = keyof typeof audioCues;

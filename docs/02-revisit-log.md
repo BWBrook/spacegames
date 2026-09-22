@@ -4,9 +4,9 @@ Things worth doing to games already built, noticed while building later ones. No
 
 ## Shared code that has earned extraction
 
-- **Audio cue loading.** Every modern lane now carries its own near-identical `loadCue` / `play` pair with an `active` guard, and Starship and Moonlander each carry their own looped-bed handling on top. Four copies is enough evidence; this belongs in `src/core/audio.ts` as a small per-game cue player that cleans up on exit.
-- **Starfields.** Starship, Intergalactic, Evil Alien and Moonlander each draw their own. They differ only in density and drift. One helper in `src/core/` with a few options would remove roughly a hundred lines.
-- **Debrief panels.** Intergalactic, Evil Alien, Beat The Bug Eyes and Moonlander all draw a centred bordered panel with a headline, a summary line, a statistics line and a "press Enter" footer. The layout maths is copied four times.
+- **Audio cue loading.** Every modern lane now carries its own near-identical `loadCue` / `play` pair with an `active` guard, and Starship and Moonlander each carry their own looped-bed handling on top. Six copies is well past enough evidence; this belongs in `src/core/audio.ts` as a small per-game cue player that cleans up on exit.
+- **Starfields.** Starship, Intergalactic, Evil Alien, Moonlander, Galacticon and Alien Snipers each draw their own. They differ only in density, colour and drift. One helper in `src/core/` with a few options would remove roughly a hundred lines.
+- **Debrief panels.** Every modern lane except Starship now draws a centred bordered panel with a headline, a summary line, a statistics line and a "press Enter" footer. The layout maths is copied six times.
 - **Phase state machines.** Each modern lane hand-rolls `phase` plus `phaseElapsed` and has hit the same TypeScript narrowing problem, where calling a function that mutates `state.phase` leaves the compiler thinking it cannot have changed. Worked around locally in Bug Eyes and Moonlander by widening to the phase union. A shared tiny phase helper would fix it once.
 
 - **Monster and creature art.** Galacticon's four monsters are drawn from primitives and one of them reads as a rounded rectangle rather than a creature. Worth a pass once the anthology is complete and there is a house style to match.
