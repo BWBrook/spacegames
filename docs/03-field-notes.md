@@ -109,6 +109,23 @@ A minimum-time descent, falling freely then braking hard and late, is on the gro
 
 ---
 
+## 8. Asteroid Belt
+
+**What it really is.** A counting reflex. Up to nine stars appear and you press the number, within 1.2 seconds.
+
+**The layout is the design.** The listing starts a fresh line and tabs back to the same column before the first, fourth and seventh star, so every asteroid is printed in left-aligned rows of three. People take in about four items at a glance and have to count beyond that, but two full rows and two more reads as eight instantly. The grouping is what makes nine countable in the time.
+
+**The crash is unreachable by crashing.** On a BBC, `INKEY(120)` returns −1 when no key arrives, so `INKEY(120)-48` is −49, not 0, and line 200's test for "no key pressed" never fires. Sitting still as an asteroid arrives prints `NOT STRONG ENOUGH`. The only route to `CRASHED INTO ASTEROID` is pressing the `0` key. Line 200 was plainly written for a read that returns 0 on no key, as `VAL(INKEY$)` does, and the BBC conversion's numeric `INKEY` agrees with it on every digit and differs only in exactly the case line 200 exists to catch. This is very probably a porting bug, not the book's.
+
+**Quirks.**
+- Any key is a shot, valued as its character code minus 48. Letters always read `TOO STRONG` and a space reads `NOT STRONG ENOUGH`.
+- This is the only listing so far that flushes the keyboard between rounds, with `*FX15`. Beat The Bug Eyes and Alien Snipers let an early press carry into the next target; this one does not.
+- The title is printed and cleared in the same instant, and so is never seen.
+
+**What the lanes do.** The retro lane keeps the bug, since it is what the disk does. The reimagined lane implements the evident intent, so letting an asteroid reach you is a crash, draws the rocks in the same rows of three, and reports undercounts and overcounts separately so a player can see which way they err.
+
+---
+
 ## Patterns across the anthology so far
 
 **The budget is always exactly enough.** Ten guesses for a 742-wide binary search, eight attempts for two axes needing five and seven bits, four bombs for three ternary searches, fourteen turns of fuel for a nine-turn descent. Whoever tuned these listings tuned them carefully, and the margin is consistently thin enough to punish sloppiness and wide enough to reward method.
@@ -118,5 +135,7 @@ A minimum-time descent, falling freely then braking hard and late, is on the gro
 **Most of these are search problems wearing costumes.** Five of the first six reduce to searching a space under a budget. The presentation differs wildly and the underlying activity barely does.
 
 **One of them is simply broken, and it is not a quirk.** Alien Snipers never tells you whether you hit. Everything else in the anthology at least closes the loop, however tersely. That single omission is the difference between a game and a test.
+
+**Some quirks belong to the port, not the book.** Our canon is a BBC conversion, recognisable by BBC-only commands such as `MODE 7` and `*FX15`, and at least one bug is almost certainly the converter's. Asteroid Belt's crash detection was written for a key read that returns 0 when nothing is pressed and broke when it was translated into one that returns −49. Galacticon's weapon table cuts the other way: it only works where a true comparison is −1, which the BBC satisfies and the Sinclair machines the book also served do not. Writing one listing for six dialects on machines with a few kilobytes of memory and no way to test on all of them, some of this was inevitable.
 
 **Two of them hide a structure that collapses the search.** Moonlander's fuel is secretly a clock, and Galacticon's weapon table is secretly a rotation. In both cases a player who sees it stops playing the stated game and starts playing a much easier one. Neither the listing nor the book says a word about either.

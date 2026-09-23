@@ -4,9 +4,9 @@ Things worth doing to games already built, noticed while building later ones. No
 
 ## Shared code that has earned extraction
 
-- **Audio cue loading.** Every modern lane now carries its own near-identical `loadCue` / `play` pair with an `active` guard, and Starship and Moonlander each carry their own looped-bed handling on top. Six copies is well past enough evidence; this belongs in `src/core/audio.ts` as a small per-game cue player that cleans up on exit.
-- **Starfields.** Starship, Intergalactic, Evil Alien, Moonlander, Galacticon and Alien Snipers each draw their own. They differ only in density, colour and drift. One helper in `src/core/` with a few options would remove roughly a hundred lines.
-- **Debrief panels.** Every modern lane except Starship now draws a centred bordered panel with a headline, a summary line, a statistics line and a "press Enter" footer. The layout maths is copied six times.
+- **Audio cue loading.** Every modern lane now carries its own near-identical `loadCue` / `play` pair with an `active` guard, and Starship and Moonlander each carry their own looped-bed handling on top. Seven copies is well past enough evidence; this belongs in `src/core/audio.ts` as a small per-game cue player that cleans up on exit.
+- **Starfields.** Every modern lane now draws its own, eight in all. They differ only in density, colour and drift, and Asteroid Belt's are streaks rather than points. One helper in `src/core/` with a few options would remove roughly a hundred lines.
+- **Debrief panels.** Every modern lane except Starship now draws a centred bordered panel with a headline, a summary line, a statistics line and a "press Enter" footer. The layout maths is copied seven times.
 - **Phase state machines.** Each modern lane hand-rolls `phase` plus `phaseElapsed` and has hit the same TypeScript narrowing problem, where calling a function that mutates `state.phase` leaves the compiler thinking it cannot have changed. Worked around locally in Bug Eyes and Moonlander by widening to the phase union. A shared tiny phase helper would fix it once.
 
 - **Monster and creature art.** Galacticon's four monsters are drawn from primitives and one of them reads as a rounded rectangle rather than a creature. Worth a pass once the anthology is complete and there is a house style to match.
@@ -21,6 +21,8 @@ Things worth doing to games already built, noticed while building later ones. No
 ## Settled along the way
 
 - **Empty-loop timing** was read three different ways across the first eight games: 1/250 s per iteration in Beat The Bug Eyes, an arbitrary 1.4 s in Galacticon, and nothing yet for Asteroid Belt, where the Bug Eyes reading would have paused six seconds between asteroids. All retro lanes now share `src/core/bbcTiming.ts` at BBC speed. Whether BBC speed feels right in Beat The Bug Eyes, where it makes the game very brisk, is a playtest question.
+
+- **Retro fidelity to the disk or to the book.** Asteroid Belt's retro lane reproduces a bug that is almost certainly the BBC converter's rather than the book's. So far every retro lane has been faithful to the disk. If the printed listings ever become available, it would be worth deciding whether the retro lanes should follow the book where the two disagree.
 
 ## Design questions raised by later games
 

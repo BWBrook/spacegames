@@ -4,7 +4,7 @@ import { chromium, webkit } from 'playwright';
 
 const DEFAULT_URL = 'http://127.0.0.1:5173';
 const BROWSERS = { chromium, webkit };
-const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes', 'moonlander', 'monsters-of-galacticon', 'alien-snipers'];
+const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes', 'moonlander', 'monsters-of-galacticon', 'alien-snipers', 'asteroid-belt'];
 const MODES = new Set(['modern', 'retro']);
 
 function parseArgs(argv) {
@@ -419,6 +419,50 @@ async function runSnipers(page, args) {
   };
 }
 
+async function runBelt(page, args) {
+  await page.screenshot({ path: path.join(args.outDir, '01-approach.png') });
+  let game = gameSnapshot(await snapshot(page));
+  const plan = [];
+  let shotImpact = false;
+
+  for (let i = 0; i < 8000; i += 1) {
+    game = gameSnapshot(await snapshot(page));
+    if (game.phase === 'debrief') break;
+    if (game.phase === 'approach') {
+      // First asteroid: undercount on purpose. Second: sit on the keys and let
+      // it hit. Every other one: count correctly.
+      const shot = plan.length;
+      if (shot === 0) {
+        await page.keyboard.press(String(game.stars > 1 ? game.stars - 1 : 2));
+      } else if (shot === 1) {
+        for (let wait = 0; wait < 90 && gameSnapshot(await snapshot(page)).phase === 'approach'; wait += 1) await step(page);
+      } else {
+        await page.keyboard.press(String(game.stars));
+      }
+      plan.push(shot);
+      await step(page, 2);
+      if (!shotImpact) {
+        await page.screenshot({ path: path.join(args.outDir, '02-impact.png') });
+        shotImpact = true;
+      }
+      continue;
+    }
+    await step(page);
+  }
+
+  await step(page, 4);
+  await page.screenshot({ path: path.join(args.outDir, '03-debrief.png') });
+  const current = await snapshot(page);
+  game = gameSnapshot(current);
+  return {
+    reachedDebrief: game.phase === 'debrief',
+    hits: game.debrief?.hits ?? null,
+    crashes: game.debrief?.crashes ?? null,
+    misses: (game.debrief?.undercounts ?? 0) + (game.debrief?.overcounts ?? 0),
+    finalSnapshot: current,
+  };
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   fs.mkdirSync(args.outDir, { recursive: true });
@@ -449,7 +493,9 @@ async function main() {
                 ? await runMoonlander(page, args)
                 : args.game === 'monsters-of-galacticon'
                   ? await runGalacticon(page, args)
-                  : await runSnipers(page, args);
+                  : args.game === 'alien-snipers'
+                    ? await runSnipers(page, args)
+                    : await runBelt(page, args);
     report = { ...args, ...result, consoleErrors };
   } catch (error) {
     failure = error;
@@ -475,6 +521,11 @@ async function main() {
   }
   if (args.game === 'evil-alien' && args.mode === 'modern' && report.outcome !== 'destroyed') {
     throw new Error(`Expected Elron destroyed; got ${report.outcome}`);
+  }
+  if (args.game === 'asteroid-belt' && args.mode === 'modern') {
+    if (report.hits !== 8) throw new Error(`Expected 8 hits after one miscount and one crash; got ${report.hits}`);
+    if (report.crashes !== 1) throw new Error(`Expected exactly one crash from the timeout; got ${report.crashes}`);
+    if (report.misses !== 1) throw new Error(`Expected exactly one miscount; got ${report.misses}`);
   }
   if (args.game === 'alien-snipers' && args.mode === 'modern') {
     if (report.difficulty !== 6) throw new Error(`Expected difficulty 6; got ${report.difficulty}`);

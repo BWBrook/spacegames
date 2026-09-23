@@ -309,4 +309,47 @@ export const games: GameManifestEntry[] = [
       loader: () => import('./alien-snipers/retro'),
     },
   },
+  {
+    id: 'asteroid-belt',
+    title: 'Asteroid Belt',
+    summary: 'Count each cluster of rocks and hit it with exactly that much force before it hits you.',
+    year: 1982,
+    difficulty: 'Easy',
+    sources: [
+      {
+        id: 'asteroid-bbc-intro',
+        label: 'BBC Micro intro',
+        path: 'basic/bbc/usborne-computer-space-games/08.bas',
+        platform: 'bbc-micro',
+        role: 'intro',
+        dfsName: '$.08',
+      },
+      {
+        id: 'asteroid-bbc-game',
+        label: 'BBC Micro game',
+        path: 'basic/bbc/usborne-computer-space-games/08AB.bas',
+        platform: 'bbc-micro',
+        role: 'game',
+        dfsName: '$.08AB',
+      },
+      {
+        id: 'usborne-spacegames-ssd',
+        label: 'Usborne Computer Space Games DFS disk image',
+        path: 'assets-src/Disc999-ComputerSpaceGamesUsborne.ssd',
+        platform: 'bbc-dfs',
+        role: 'disk-image',
+      },
+      {
+        id: 'usborne-spacegames-catalog',
+        label: 'Extracted DFS catalogue',
+        path: 'basic/bbc/usborne-computer-space-games/catalog.json',
+        platform: 'bbc-dfs',
+        role: 'catalog',
+      },
+    ],
+    loader: () => import('./asteroid-belt'),
+    retro: {
+      loader: () => import('./asteroid-belt/retro'),
+    },
+  },
 ];
