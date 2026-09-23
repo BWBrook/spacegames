@@ -4,7 +4,7 @@ import { chromium, webkit } from 'playwright';
 
 const DEFAULT_URL = 'http://127.0.0.1:5173';
 const BROWSERS = { chromium, webkit };
-const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes', 'moonlander', 'monsters-of-galacticon', 'alien-snipers', 'asteroid-belt', 'trip-into-the-future'];
+const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes', 'moonlander', 'monsters-of-galacticon', 'alien-snipers', 'asteroid-belt', 'trip-into-the-future', 'death-valley'];
 const MODES = new Set(['modern', 'retro']);
 
 function parseArgs(argv) {
@@ -509,6 +509,49 @@ async function runTrip(page, args) {
   };
 }
 
+async function runValley(page, args) {
+  await page.screenshot({ path: path.join(args.outDir, '01-briefing.png') });
+  await command(page, 'setWidth', 12);
+  await step(page, 2);
+  await page.keyboard.press('Enter');
+  await step(page, 2);
+
+  // Steer at the centre of the valley a little ahead, holding keys as a player would.
+  let held = null;
+  const hold = async key => {
+    if (held === key) return;
+    if (held) await page.keyboard.up(held);
+    if (key) await page.keyboard.down(key);
+    held = key;
+  };
+  let game = gameSnapshot(await snapshot(page));
+  let shotMid = false;
+  for (let i = 0; i < 4000; i += 1) {
+    game = gameSnapshot(await snapshot(page));
+    if (game.phase !== 'flight') break;
+    const error = game.aheadCentre - game.shipX;
+    await hold(error > 0.35 ? 'ArrowRight' : error < -0.35 ? 'ArrowLeft' : null);
+    if (!shotMid && game.distance > 90) {
+      await page.screenshot({ path: path.join(args.outDir, '02-flight.png') });
+      shotMid = true;
+    }
+    await step(page);
+  }
+  await hold(null);
+  for (let i = 0; i < 200 && gameSnapshot(await snapshot(page)).phase !== 'debrief'; i += 1) await step(page);
+  await step(page, 4);
+  await page.screenshot({ path: path.join(args.outDir, '03-debrief.png') });
+  const current = await snapshot(page);
+  game = gameSnapshot(current);
+  return {
+    reachedDebrief: game.phase === 'debrief',
+    escaped: game.debrief?.escaped ?? null,
+    rows: game.debrief?.rows ?? null,
+    closestShave: game.debrief?.closestShave ?? null,
+    finalSnapshot: current,
+  };
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   fs.mkdirSync(args.outDir, { recursive: true });
@@ -543,7 +586,9 @@ async function main() {
                     ? await runSnipers(page, args)
                     : args.game === 'asteroid-belt'
                       ? await runBelt(page, args)
-                      : await runTrip(page, args);
+                      : args.game === 'trip-into-the-future'
+                        ? await runTrip(page, args)
+                        : await runValley(page, args);
     report = { ...args, ...result, consoleErrors };
   } catch (error) {
     failure = error;
@@ -569,6 +614,10 @@ async function main() {
   }
   if (args.game === 'evil-alien' && args.mode === 'modern' && report.outcome !== 'destroyed') {
     throw new Error(`Expected Elron destroyed; got ${report.outcome}`);
+  }
+  if (args.game === 'death-valley' && args.mode === 'modern') {
+    if (!report.escaped) throw new Error(`Expected to clear the valley at width 12; crashed after ${report.rows} rows`);
+    if (report.rows !== 200) throw new Error(`Expected 200 rows; got ${report.rows}`);
   }
   if (args.game === 'trip-into-the-future' && args.mode === 'modern') {
     if (report.onTime !== 4) throw new Error(`Expected 4 trips on time; got ${report.onTime}`);

@@ -19,6 +19,8 @@ interface KeyboardOptions {
 export class RetroTerminal {
   readonly lines: string[] = [];
   input = '';
+  /** Off while a listing is printing rather than waiting at an INPUT. */
+  promptVisible = true;
 
   private caretTimer = 0;
   private readonly maxLines: number;
@@ -99,12 +101,14 @@ export class RetroTerminal {
     this.lines.forEach((line, index) => {
       g.fillText(line, 0, index * 22);
     });
-    const promptY = this.lines.length * 22 + 8;
-    const prompt = `> ${this.input}`;
-    g.fillText(prompt, 0, promptY);
-    if (this.caretTimer < 0.6) {
-      const metrics = g.measureText(prompt);
-      g.fillRect(metrics.width + 4, promptY - 16, 12, 2);
+    if (this.promptVisible) {
+      const promptY = this.lines.length * 22 + 8;
+      const prompt = `> ${this.input}`;
+      g.fillText(prompt, 0, promptY);
+      if (this.caretTimer < 0.6) {
+        const metrics = g.measureText(prompt);
+        g.fillRect(metrics.width + 4, promptY - 16, 12, 2);
+      }
     }
     g.restore();
   }

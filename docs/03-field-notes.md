@@ -144,6 +144,26 @@ A minimum-time descent, falling freely then braking hard and late, is on the gro
 
 ---
 
+## 10. Death Valley
+
+**What it really is.** A random walk you have to cancel out by hand. Each row the ravine drifts one column left, right or not at all, and you steer against it.
+
+**You only see where you have been.** Every row prints at the bottom and the screen scrolls up, so the ship is always on the newest line. There is no view ahead, and you steer in reaction to a drift that has already happened.
+
+**The interpreter sets the pace.** The listing never pauses; a row takes as long as BBC BASIC takes to run it. Counting the statements, about thirty per row plus two per printed space, gives roughly nine rows a second at width 15 and twelve at width 8, since a narrower valley prints fewer spaces and so scrolls faster as well as leaving less room.
+
+**The intro's advice checks out.** Simulating players who react a fixed number of rows late, a typical quarter-second reaction is two to three rows at that pace, and at that lag width 15 is always survivable, 10 and 12 manageable, and 8 almost never. That is exactly "try 15 first and then work your way down - 8 is quite difficult". The agreement is also what confirmed the scroll-rate estimate; a first guess of fifteen rows a second would have made even 15 a struggle.
+
+**Quirks.**
+- The BBC's auto-repeat, as best established, fires about twelve times a second, faster than the scroll, so holding a key piles up presses in the buffer and the ship keeps moving after you let go. Three seconds of holding left six keys queued.
+- From width 18 up, a row can overflow the 40-column screen when the valley wanders right, and wrapped lines scramble the display.
+- A width of 0, 1 or a blank line crashes on the first row; width 2 leaves a single safe column.
+- The valley never narrows. The width you type is the whole difficulty.
+
+**What the lanes do.** The retro lane emulates the per-row timing, the keyboard buffer, the auto-repeat and the wrap. The reimagined lane generates the ravine with the listing's own random walk but gives the Speed Dart headlights that light six rows ahead, the one change of kind, trading pure reaction for short-range anticipation.
+
+---
+
 ## Patterns across the anthology so far
 
 **The budget is always exactly enough.** Ten guesses for a 742-wide binary search, eight attempts for two axes needing five and seven bits, four bombs for three ternary searches, fourteen turns of fuel for a nine-turn descent. Whoever tuned these listings tuned them carefully, and the margin is consistently thin enough to punish sloppiness and wide enough to reward method.
@@ -157,5 +177,7 @@ A minimum-time descent, falling freely then braking hard and late, is on the gro
 **One of them is simply broken, and it is not a quirk.** Alien Snipers never tells you whether you hit. Everything else in the anthology at least closes the loop, however tersely. That single omission is the difference between a game and a test.
 
 **Some quirks belong to the port, not the book.** Our canon is a BBC conversion, recognisable by BBC-only commands such as `MODE 7` and `*FX15`, and at least one bug is almost certainly the converter's. Asteroid Belt's crash detection was written for a key read that returns 0 when nothing is pressed and broke when it was translated into one that returns −49. Galacticon's weapon table cuts the other way: it only works where a true comparison is −1, which the BBC satisfies and the Sinclair machines the book also served do not. Writing one listing for six dialects on machines with a few kilobytes of memory and no way to test on all of them, some of this was inevitable.
+
+**The machine is part of the game.** Several listings run flat out or wait on the keyboard, and so inherit their pace and their feel from the BBC itself: Death Valley's scroll rate is the interpreter's speed, its steering is shaped by the keyboard's auto-repeat, and Beat The Bug Eyes and Alien Snipers are shaped by its keyboard buffer. Reproducing them faithfully means emulating the machine as well as the program, which is why the retro lanes now share a timing module and a number formatter.
 
 **Two of them hide a structure that collapses the search.** Moonlander's fuel is secretly a clock, and Galacticon's weapon table is secretly a rotation. In both cases a player who sees it stops playing the stated game and starts playing a much easier one. Neither the listing nor the book says a word about either.

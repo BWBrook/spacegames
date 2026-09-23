@@ -395,4 +395,47 @@ export const games: GameManifestEntry[] = [
       loader: () => import('./trip-into-the-future/retro'),
     },
   },
+  {
+    id: 'death-valley',
+    title: 'Death Valley',
+    summary: 'Fly a Speed Dart down a winding ravine by feel, with the walls never more than a few metres away.',
+    year: 1982,
+    difficulty: 'Hard',
+    sources: [
+      {
+        id: 'valley-bbc-intro',
+        label: 'BBC Micro intro',
+        path: 'basic/bbc/usborne-computer-space-games/10.bas',
+        platform: 'bbc-micro',
+        role: 'intro',
+        dfsName: '$.10',
+      },
+      {
+        id: 'valley-bbc-game',
+        label: 'BBC Micro game',
+        path: 'basic/bbc/usborne-computer-space-games/10DV.bas',
+        platform: 'bbc-micro',
+        role: 'game',
+        dfsName: '$.10DV',
+      },
+      {
+        id: 'usborne-spacegames-ssd',
+        label: 'Usborne Computer Space Games DFS disk image',
+        path: 'assets-src/Disc999-ComputerSpaceGamesUsborne.ssd',
+        platform: 'bbc-dfs',
+        role: 'disk-image',
+      },
+      {
+        id: 'usborne-spacegames-catalog',
+        label: 'Extracted DFS catalogue',
+        path: 'basic/bbc/usborne-computer-space-games/catalog.json',
+        platform: 'bbc-dfs',
+        role: 'catalog',
+      },
+    ],
+    loader: () => import('./death-valley'),
+    retro: {
+      loader: () => import('./death-valley/retro'),
+    },
+  },
 ];

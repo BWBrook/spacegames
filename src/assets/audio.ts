@@ -29,6 +29,9 @@ export const audioCues = {
   'trip/launch': '/audio/sfx/starship/ignition.wav',
   'trip/home': '/audio/sfx/starship/success.wav',
   'trip/lost': '/audio/sfx/starship/failure.wav',
+  'valley/engine': '/audio/sfx/starship/prep-ambience.ogg',
+  'valley/crash': '/audio/sfx/starship/failure.wav',
+  'valley/through': '/audio/sfx/starship/success.wav',
 } as const;
 
 export type AudioCueId = keyof typeof audioCues;

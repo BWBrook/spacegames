@@ -10,6 +10,7 @@ const ICONS: Record<string, string> = {
   'alien-snipers': `<svg ${ATTRS}><circle cx="24" cy="24" r="17"/><path d="M24 4v10M24 34v10M4 24h10M34 24h10"/><circle cx="24" cy="24" r="4"/><path d="M31 15l6-6"/><circle cx="33" cy="17" r="2.2" fill="currentColor" stroke="none"/></svg>`,
   'asteroid-belt': `<svg ${ATTRS}><circle cx="14" cy="14" r="4"/><circle cx="24" cy="12" r="3.5"/><circle cx="34" cy="15" r="4"/><circle cx="16" cy="25" r="3.5"/><circle cx="27" cy="24" r="4"/><path d="M24 44V36M18 40l6-6 6 6"/></svg>`,
   'trip-into-the-future': `<svg ${ATTRS}><circle cx="17" cy="24" r="11"/><path d="M17 17v7l5 3"/><path d="M31 18l8-4-2 8"/><path d="M28 28c4 0 8-2 11-6"/><path d="M33 34l9 4M36 30l8 2"/></svg>`,
+  'death-valley': `<svg ${ATTRS}><path d="M8 4c4 6-2 10 2 16s-4 10 0 16 2 8 2 8"/><path d="M40 4c-4 6 2 10-2 16s4 10 0 16-2 8-2 8"/><path d="M24 24l-4 9h8z"/></svg>`,
 };
 
 const FALLBACK = `<svg ${ATTRS}><circle cx="24" cy="24" r="14"/><path d="M24 10v28M10 24h28"/></svg>`;
