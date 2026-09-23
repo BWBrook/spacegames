@@ -29,5 +29,8 @@
 | `belt/destroy` | reuses `starship/ignition` | Sci-Fi Energy Weapons | Asteroid destroyed. |
 | `belt/hit` | reuses `starship/failure` | Parallax | Hull struck. |
 | `belt/report` | reuses `starship/success` | Parallax | Navigation log. |
+| `trip/launch` | reuses `starship/ignition` | Sci-Fi Energy Weapons | Departure. |
+| `trip/home` | reuses `starship/success` | Parallax | Arriving home. |
+| `trip/lost` | reuses `starship/failure` | Parallax | Dying on the way. |
 
 All material originates from the free **Sci-Fi Sound Effects** bundle on 99Sounds (Rescopic Sound, 24-bit/96 kHz WAV, royalty-free for commercial use). See https://99sounds.org/sci-fi-sounds/ for license terms. The original pack is not stored in this repo; the filenames above preserve provenance, while the playable derivatives live under `public/audio/`.

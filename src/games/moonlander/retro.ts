@@ -1,10 +1,10 @@
+import { formatBbcNumber as formatNumber } from '../../core/bbcNumber';
 import { RetroTerminal } from '../../core/retroTerminal';
 import type { RetroFactory } from '../types';
 import {
   MOONLANDER_RULES,
   VERDICT_TEXT,
   applyTurn,
-  formatNumber,
   startSnapshot,
 } from './state';
 import type { FlightSnapshot } from './state';

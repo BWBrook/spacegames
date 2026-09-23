@@ -84,10 +84,7 @@ export function startSnapshot(): FlightSnapshot {
   };
 }
 
-/** BBC BASIC prints 500 and 487.5, never 500.0. */
-export function formatNumber(value: number) {
-  return String(Math.round(value * 100) / 100);
-}
+
 
 import type { MoonlanderDebrief, MoonlanderState } from './types';
 

@@ -4,7 +4,7 @@ import { chromium, webkit } from 'playwright';
 
 const DEFAULT_URL = 'http://127.0.0.1:5173';
 const BROWSERS = { chromium, webkit };
-const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes', 'moonlander', 'monsters-of-galacticon', 'alien-snipers', 'asteroid-belt'];
+const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes', 'moonlander', 'monsters-of-galacticon', 'alien-snipers', 'asteroid-belt', 'trip-into-the-future'];
 const MODES = new Set(['modern', 'retro']);
 
 function parseArgs(argv) {
@@ -463,6 +463,52 @@ async function runBelt(page, args) {
   };
 }
 
+const TRIP_MISSIONS = [
+  { target: 30, engineCap: 0.6 },
+  { target: 60, engineCap: 0.6 },
+  { target: 90, engineCap: 0.87 },
+  { target: 110, engineCap: 0.93 },
+  { target: 124, engineCap: 0.96 },
+];
+
+async function runTrip(page, args) {
+  await command(page, 'setMissions', TRIP_MISSIONS);
+  await step(page, 2);
+  await page.screenshot({ path: path.join(args.outDir, '01-plan.png') });
+
+  for (let m = 0; m < TRIP_MISSIONS.length; m += 1) {
+    const mission = TRIP_MISSIONS[m];
+    // Correct physics: Earth time is distance over speed. The last mission is
+    // flown deliberately slowly, so Earth's calendar is right and the crew is not.
+    const speed = m === TRIP_MISSIONS.length - 1 ? 0.5 : mission.engineCap;
+    await command(page, 'setPlan', { speed, distance: speed * mission.target });
+    await step(page, 2);
+    await page.keyboard.press('Enter');
+    await step(page, 2);
+    if (m === 2) {
+      for (let i = 0; i < 150; i += 1) await step(page);
+      await page.screenshot({ path: path.join(args.outDir, '02-voyage.png') });
+    }
+    for (let i = 0; i < 600 && gameSnapshot(await snapshot(page)).phase !== 'arrival'; i += 1) await step(page);
+    await step(page, 50);
+    if (m === TRIP_MISSIONS.length - 1) await page.screenshot({ path: path.join(args.outDir, '03-died.png') });
+    await page.keyboard.press('Enter');
+    await step(page, 3);
+  }
+
+  await step(page, 4);
+  await page.screenshot({ path: path.join(args.outDir, '04-debrief.png') });
+  const current = await snapshot(page);
+  const game = gameSnapshot(current);
+  return {
+    reachedDebrief: game.phase === 'debrief',
+    onTime: game.debrief?.onTime ?? null,
+    died: game.debrief?.died ?? null,
+    lastEarthYears: game.results.at(-1)?.earthYears ?? null,
+    finalSnapshot: current,
+  };
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   fs.mkdirSync(args.outDir, { recursive: true });
@@ -495,7 +541,9 @@ async function main() {
                   ? await runGalacticon(page, args)
                   : args.game === 'alien-snipers'
                     ? await runSnipers(page, args)
-                    : await runBelt(page, args);
+                    : args.game === 'asteroid-belt'
+                      ? await runBelt(page, args)
+                      : await runTrip(page, args);
     report = { ...args, ...result, consoleErrors };
   } catch (error) {
     failure = error;
@@ -521,6 +569,11 @@ async function main() {
   }
   if (args.game === 'evil-alien' && args.mode === 'modern' && report.outcome !== 'destroyed') {
     throw new Error(`Expected Elron destroyed; got ${report.outcome}`);
+  }
+  if (args.game === 'trip-into-the-future' && args.mode === 'modern') {
+    if (report.onTime !== 4) throw new Error(`Expected 4 trips on time; got ${report.onTime}`);
+    if (report.died !== 1) throw new Error(`Expected the slow final trip to kill the crew; got ${report.died} deaths`);
+    if (Math.abs(report.lastEarthYears - 124) > 0.01) throw new Error('The slow trip should still have hit the Earth target exactly');
   }
   if (args.game === 'asteroid-belt' && args.mode === 'modern') {
     if (report.hits !== 8) throw new Error(`Expected 8 hits after one miscount and one crash; got ${report.hits}`);

@@ -9,6 +9,7 @@ const ICONS: Record<string, string> = {
   'monsters-of-galacticon': `<svg ${ATTRS}><path d="M10 40c-2-10 1-20 6-25 4-4 12-4 16 0 5 5 8 15 6 25"/><circle cx="19" cy="21" r="2.6"/><circle cx="29" cy="21" r="2.6"/><path d="M18 31c2 2 4 3 6 3s4-1 6-3"/><path d="M13 14l-4-5M35 14l4-5M24 10V4"/></svg>`,
   'alien-snipers': `<svg ${ATTRS}><circle cx="24" cy="24" r="17"/><path d="M24 4v10M24 34v10M4 24h10M34 24h10"/><circle cx="24" cy="24" r="4"/><path d="M31 15l6-6"/><circle cx="33" cy="17" r="2.2" fill="currentColor" stroke="none"/></svg>`,
   'asteroid-belt': `<svg ${ATTRS}><circle cx="14" cy="14" r="4"/><circle cx="24" cy="12" r="3.5"/><circle cx="34" cy="15" r="4"/><circle cx="16" cy="25" r="3.5"/><circle cx="27" cy="24" r="4"/><path d="M24 44V36M18 40l6-6 6 6"/></svg>`,
+  'trip-into-the-future': `<svg ${ATTRS}><circle cx="17" cy="24" r="11"/><path d="M17 17v7l5 3"/><path d="M31 18l8-4-2 8"/><path d="M28 28c4 0 8-2 11-6"/><path d="M33 34l9 4M36 30l8 2"/></svg>`,
 };
 
 const FALLBACK = `<svg ${ATTRS}><circle cx="24" cy="24" r="14"/><path d="M24 10v28M10 24h28"/></svg>`;

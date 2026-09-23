@@ -126,6 +126,24 @@ A minimum-time descent, falling freely then braking hard and late, is on the gro
 
 ---
 
+## 9. Trip Into The Future
+
+**What it really is.** The only game in the book built on real physics, and the physics has a problem. You are told how many years must pass on Earth, and you choose a speed and a distance.
+
+**Right formula, wrong clock.** The listing prints distance over speed as the years you spent aboard, and multiplies by the dilation factor to get the years that passed on Earth. Those two figures are correctly related to each other. But distance over speed is Earth's time, not the ship's, unless the distance is measured from the ship and so already contracted. The intro gives the distance in plain light years, which are normally measured from Earth.
+
+**So correct physics loses.** To have 100 years pass on Earth at 0.9c you need to cover 90 light years, and in reality you would age 43.6 years and arrive on time. The listing tells you that you took 100 years, arrived 229 years in the future, and died on the way. It wants 39.2 light years, which in reality would get you home after 43.6 Earth years. Over 44,000 random cases the listing accepts a physically correct answer only 26.6 per cent of the time, all at low speeds where dilation barely matters.
+
+**Quirks.**
+- The prompt offers speeds from 0 to 1 and accepts both ends, and both stop the program: `Division by zero at line 120` for 0 and `at line 130` for 1. A blank line counts as 0, because BBC `INPUT` reads it that way.
+- Thirty of the hundred possible targets need no relativity at all; slow travel under 50 years aboard reaches anything up to 54.
+- A miss of exactly 5 years gets no verdict, since one line tests for under 5 and the next for over.
+- One attempt per run, and finding the right dilation factor without a calculator is guesswork.
+
+**What the lanes do.** The retro lane keeps the wrong clock, both crashes and the silent gap, printing nine significant figures as a BBC would. The reimagined lane uses correct physics, shows the dilation factor and its curve, caps each mission's engine speed so that choosing a speed is a real decision, and runs the voyage with the two clocks side by side.
+
+---
+
 ## Patterns across the anthology so far
 
 **The budget is always exactly enough.** Ten guesses for a 742-wide binary search, eight attempts for two axes needing five and seven bits, four bombs for three ternary searches, fourteen turns of fuel for a nine-turn descent. Whoever tuned these listings tuned them carefully, and the margin is consistently thin enough to punish sloppiness and wide enough to reward method.
@@ -133,6 +151,8 @@ A minimum-time descent, falling freely then braking hard and late, is on the gro
 **The intros know things the listings do not say.** Starship's intro admits you are guessing. Moonlander's states the hover rule that the arithmetic only implies. Evil Alien's and Beat The Bug Eyes' both describe a closing threat that the listing never implements, which is where both reimagined lanes found their expansion.
 
 **Most of these are search problems wearing costumes.** Five of the first six reduce to searching a space under a budget. The presentation differs wildly and the underlying activity barely does.
+
+**One of them teaches the wrong physics.** Trip Into The Future is the book's only game about real science, and it assigns distance over speed to the traveller's clock instead of Earth's. A player who understands relativity will lose to it.
 
 **One of them is simply broken, and it is not a quirk.** Alien Snipers never tells you whether you hit. Everything else in the anthology at least closes the loop, however tersely. That single omission is the difference between a game and a test.
 

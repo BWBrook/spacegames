@@ -11,6 +11,11 @@ Things worth doing to games already built, noticed while building later ones. No
 
 - **Monster and creature art.** Galacticon's four monsters are drawn from primitives and one of them reads as a rounded rectangle rather than a creature. Worth a pass once the anthology is complete and there is a house style to match.
 
+## Retro fidelity
+
+- **`ENTER A NUMBER.` is not a BBC message.** The retro lanes for Starship Take-Off, Intergalactic Games, Evil Alien and Moonlander print it when a line is blank or non-numeric. BBC `INPUT` into a numeric variable reads such a line as 0 and carries on. `readBbcNumber` in `src/core/bbcNumber.ts` does the right thing and Trip Into The Future uses it, because there a blank speed is one of the routes to a division by zero. The other four should follow; in Moonlander, for instance, a blank burn should simply be a burn of 0.
+- **Number formatting.** `formatBbcNumber` now prints nine significant figures as the BBC did, and Moonlander has been moved onto it. Its old formatter rounded to two decimal places, which only differed from the BBC for fractional burns. Every other retro lane prints integers only, so none needs it yet.
+
 ## Loose ends
 
 - `public/audio/bleep.wav` has been unreferenced since the Start gate was replaced by the landing page. Delete it, or give it a use.

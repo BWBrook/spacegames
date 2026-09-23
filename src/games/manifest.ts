@@ -352,4 +352,47 @@ export const games: GameManifestEntry[] = [
       loader: () => import('./asteroid-belt/retro'),
     },
   },
+  {
+    id: 'trip-into-the-future',
+    title: 'Trip Into The Future',
+    summary: 'Fly near light speed so decades pass on Earth while only years pass for you.',
+    year: 1982,
+    difficulty: 'Medium',
+    sources: [
+      {
+        id: 'trip-bbc-intro',
+        label: 'BBC Micro intro',
+        path: 'basic/bbc/usborne-computer-space-games/09.bas',
+        platform: 'bbc-micro',
+        role: 'intro',
+        dfsName: '$.09',
+      },
+      {
+        id: 'trip-bbc-game',
+        label: 'BBC Micro game',
+        path: 'basic/bbc/usborne-computer-space-games/09TITF.bas',
+        platform: 'bbc-micro',
+        role: 'game',
+        dfsName: '$.09TITF',
+      },
+      {
+        id: 'usborne-spacegames-ssd',
+        label: 'Usborne Computer Space Games DFS disk image',
+        path: 'assets-src/Disc999-ComputerSpaceGamesUsborne.ssd',
+        platform: 'bbc-dfs',
+        role: 'disk-image',
+      },
+      {
+        id: 'usborne-spacegames-catalog',
+        label: 'Extracted DFS catalogue',
+        path: 'basic/bbc/usborne-computer-space-games/catalog.json',
+        platform: 'bbc-dfs',
+        role: 'catalog',
+      },
+    ],
+    loader: () => import('./trip-into-the-future'),
+    retro: {
+      loader: () => import('./trip-into-the-future/retro'),
+    },
+  },
 ];
