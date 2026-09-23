@@ -18,6 +18,10 @@ Things worth doing to games already built, noticed while building later ones. No
 - Retro lanes duplicate the "find the game source, else fall back" lookup and the title and source-label construction. A one-line helper would do.
 - No automated test suite exists. The differential test of Moonlander's physics against a transcription of the listing lived in the scratchpad and was thrown away. Several games now have pure rule modules that would be cheap to test properly, which is what `AGENTS.md` says to do once logic stabilises.
 
+## Settled along the way
+
+- **Empty-loop timing** was read three different ways across the first eight games: 1/250 s per iteration in Beat The Bug Eyes, an arbitrary 1.4 s in Galacticon, and nothing yet for Asteroid Belt, where the Bug Eyes reading would have paused six seconds between asteroids. All retro lanes now share `src/core/bbcTiming.ts` at BBC speed. Whether BBC speed feels right in Beat The Bug Eyes, where it makes the game very brisk, is a playtest question.
+
 ## Design questions raised by later games
 
 - Evil Alien and Beat The Bug Eyes both added a creeping threat with a hard loss the original lacked, and Moonlander did not need one because the original already had a real failure state. Worth checking, once they are all playable, whether that device is used too often across the anthology.

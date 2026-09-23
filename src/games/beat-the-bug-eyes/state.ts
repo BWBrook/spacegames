@@ -1,20 +1,20 @@
+import { centiseconds, emptyLoopSeconds } from '../../core/bbcTiming';
+
 export const BUG_EYES_RULES = {
   bugs: 10,
   positions: 4,
 } as const;
 
 /**
- * 04BE.bas times itself with empty FOR loops, whose wall-clock length depended
- * on the machine. We read one loop iteration as 1/250 s, which puts the lurk
- * delay at 0.8-2.0 s and the hit flash at 1.2 s. The reaction window needs no
- * interpretation: INKEY$(1) waits one centisecond, 150 times, so 1.5 s.
+ * Line 50's lurk and line 190's hit flash are empty FOR loops, read at BBC
+ * speed by the shared timing module. The window needs no interpretation:
+ * INKEY$(1) waits one centisecond and is polled 150 times.
  */
 export const RETRO_TIMING = {
-  loopSeconds: 1 / 250,
   lurkIterationsMin: 200,
   lurkIterationsSpan: 300,
-  windowSeconds: 1.5,
-  flashIterations: 300,
+  windowSeconds: centiseconds(150),
+  flashSeconds: emptyLoopSeconds(300),
 } as const;
 
 /** Row and column of each "OO" in the original, from the GOSUBs at lines 240-340. */
@@ -27,7 +27,7 @@ export const RETRO_POSITIONS = [
 
 export function retroLurkSeconds(rng: () => number = Math.random) {
   const iterations = Math.floor(rng() * RETRO_TIMING.lurkIterationsSpan) + RETRO_TIMING.lurkIterationsMin;
-  return iterations * RETRO_TIMING.loopSeconds;
+  return emptyLoopSeconds(iterations);
 }
 
 export function randomPosition(rng: () => number = Math.random) {

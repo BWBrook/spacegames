@@ -97,7 +97,7 @@ export const createRetroGame: RetroFactory = ({ stage, manifest }) => {
     if (spot) screen.writeAt(spot.row, spot.column, '*');
     state.stage = 'flash';
     state.timer = 0;
-    state.duration = RETRO_TIMING.flashIterations * RETRO_TIMING.loopSeconds;
+    state.duration = RETRO_TIMING.flashSeconds;
   }
 
   function finish() {

@@ -1,3 +1,4 @@
+import { emptyLoopSeconds } from '../../core/bbcTiming';
 import { RetroTerminal } from '../../core/retroTerminal';
 import type { RetroFactory } from '../types';
 import {
@@ -8,6 +9,9 @@ import {
   resolveWeapon,
   shuffleNames,
 } from './state';
+
+/** Line 380: FOR I=1 TO 1200, the pause to read each outcome. */
+const OUTCOME_PAUSE = emptyLoopSeconds(1200);
 
 interface RetroState {
   names: string[];
@@ -132,7 +136,7 @@ export const createRetroGame: RetroFactory = ({ stage, manifest }) => {
       terminal.update(dt);
       if (state.done || state.awaitingInput) return;
       state.pause += dt;
-      if (state.pause >= 1.4) nextEncounter();
+      if (state.pause >= OUTCOME_PAUSE) nextEncounter();
     },
     render() {
       terminal.render();
