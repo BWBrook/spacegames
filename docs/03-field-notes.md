@@ -164,6 +164,30 @@ A minimum-time descent, falling freely then braking hard and late, is on the gro
 
 ---
 
+## 11. Space Mines
+
+**What it really is.** A small economy in the tradition of Hamurabi: sell ore and mines, buy food and mines, and keep satisfaction and the ratio of people to mines in range for ten years.
+
+**A missed Shift key.** Line 500 reads `RND81)` where it means `RND(1)`. On a BBC Micro keyboard the opening bracket is Shift and 8, so this is what comes out when the typist misses the Shift. BBC BASIC only checks a statement when it runs it, and that statement only runs once satisfaction passes 1.1, so the game plays normally until you do well, then stops with `Missing ) at line 500`.
+
+**Being a good leader is fatal.** One generous year leaves satisfaction at exactly 1.1; the second takes it past, and the program halts. Because line 500 is the only way production rises, and population growth sits behind the same test, neither can ever increase on the disk, and the market glut can never occur. Over 40,000 simulated runs a generous strategy halts at line 500 two times in three; on the repaired rules it survives 64 per cent of the time and ends with 94 people against 58 for a cautious leader.
+
+**What the numbers reward.**
+- $80 a head is the real floor, not the "APPR. $100" the prompt suggests: feeding at $80 and holding ore in poor years survives 79 per cent of runs, feeding at $100 only 66.
+- Satisfaction never decays. Under the repaired rules two generous years buy growth for the rest of the term.
+- Ore never spoils, so selling in good years and holding in bad is the real skill.
+
+**Quirks.**
+- One start in three already has fewer than ten people a mine and loses at the end of the first year unless the player sells mines, with no warning.
+- Selling every mine is allowed and then divides by zero at line 520.
+- Production can fall below zero, after which the ore prompt rejects every answer for ever.
+- The leak and glut messages are cleared before they can be read.
+- A food price is rolled on line 40 and never used; `THERRE ARE` is misspelt; and on a BBC the year prints as `YEAR1`, with no space before the number.
+
+**What the lanes do.** The retro lane keeps every one of these, crashes included. The reimagined lane uses the repaired rules, so the colony can grow, and shows each rule's effect as the orders are set.
+
+---
+
 ## Patterns across the anthology so far
 
 **The budget is always exactly enough.** Ten guesses for a 742-wide binary search, eight attempts for two axes needing five and seven bits, four bombs for three ternary searches, fourteen turns of fuel for a nine-turn descent. Whoever tuned these listings tuned them carefully, and the margin is consistently thin enough to punish sloppiness and wide enough to reward method.
@@ -175,6 +199,8 @@ A minimum-time descent, falling freely then braking hard and late, is on the gro
 **One of them teaches the wrong physics.** Trip Into The Future is the book's only game about real science, and it assigns distance over speed to the traveller's clock instead of Earth's. A player who understands relativity will lose to it.
 
 **One of them is simply broken, and it is not a quirk.** Alien Snipers never tells you whether you hit. Everything else in the anthology at least closes the loop, however tersely. That single omission is the difference between a game and a test.
+
+**Some bugs are typing slips on a BBC keyboard.** Space Mines' `RND81)` is `RND(1)` with the Shift missed, since the BBC's opening bracket is Shift and 8. Whoever typed these listings into a BBC left marks of the machine in the code as well as in its behaviour.
 
 **Some quirks belong to the port, not the book.** Our canon is a BBC conversion, recognisable by BBC-only commands such as `MODE 7` and `*FX15`, and at least one bug is almost certainly the converter's. Asteroid Belt's crash detection was written for a key read that returns 0 when nothing is pressed and broke when it was translated into one that returns −49. Galacticon's weapon table cuts the other way: it only works where a true comparison is −1, which the BBC satisfies and the Sinclair machines the book also served do not. Writing one listing for six dialects on machines with a few kilobytes of memory and no way to test on all of them, some of this was inevitable.
 

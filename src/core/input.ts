@@ -5,6 +5,7 @@ const CAPTURED_KEYS = new Set([
   'ArrowRight',
   'Enter',
   'Escape',
+  'Backspace',
   ' ',
 ]);
 

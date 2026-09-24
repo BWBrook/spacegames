@@ -35,5 +35,9 @@
 | `valley/engine` | reuses `starship/prep-ambience` | Parallax | Looped Speed Dart engine. |
 | `valley/crash` | reuses `starship/failure` | Parallax | Disintegration. |
 | `valley/through` | reuses `starship/success` | Parallax | Out of the valley. |
+| `mines/year` | reuses `starship/warning` | Parallax | End of year. |
+| `mines/fail` | reuses `starship/failure` | Parallax | A leak, or losing office. |
+| `mines/refused` | reuses `starship/vent` | Sci-Fi Energy Weapons | Orders the colony cannot afford. |
+| `mines/term` | reuses `starship/success` | Parallax | Surviving the term. |
 
 All material originates from the free **Sci-Fi Sound Effects** bundle on 99Sounds (Rescopic Sound, 24-bit/96 kHz WAV, royalty-free for commercial use). See https://99sounds.org/sci-fi-sounds/ for license terms. The original pack is not stored in this repo; the filenames above preserve provenance, while the playable derivatives live under `public/audio/`.

@@ -438,4 +438,47 @@ export const games: GameManifestEntry[] = [
       loader: () => import('./death-valley/retro'),
     },
   },
+  {
+    id: 'space-mines',
+    title: 'Space Mines',
+    summary: 'Run a mining colony on Astron for ten years: sell ore, feed your people, and never overwork them.',
+    year: 1982,
+    difficulty: 'Medium',
+    sources: [
+      {
+        id: 'mines-bbc-intro',
+        label: 'BBC Micro intro',
+        path: 'basic/bbc/usborne-computer-space-games/11.bas',
+        platform: 'bbc-micro',
+        role: 'intro',
+        dfsName: '$.11',
+      },
+      {
+        id: 'mines-bbc-game',
+        label: 'BBC Micro game',
+        path: 'basic/bbc/usborne-computer-space-games/11SM.bas',
+        platform: 'bbc-micro',
+        role: 'game',
+        dfsName: '$.11SM',
+      },
+      {
+        id: 'usborne-spacegames-ssd',
+        label: 'Usborne Computer Space Games DFS disk image',
+        path: 'assets-src/Disc999-ComputerSpaceGamesUsborne.ssd',
+        platform: 'bbc-dfs',
+        role: 'disk-image',
+      },
+      {
+        id: 'usborne-spacegames-catalog',
+        label: 'Extracted DFS catalogue',
+        path: 'basic/bbc/usborne-computer-space-games/catalog.json',
+        platform: 'bbc-dfs',
+        role: 'catalog',
+      },
+    ],
+    loader: () => import('./space-mines'),
+    retro: {
+      loader: () => import('./space-mines/retro'),
+    },
+  },
 ];

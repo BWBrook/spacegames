@@ -4,7 +4,7 @@ import { chromium, webkit } from 'playwright';
 
 const DEFAULT_URL = 'http://127.0.0.1:5173';
 const BROWSERS = { chromium, webkit };
-const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes', 'moonlander', 'monsters-of-galacticon', 'alien-snipers', 'asteroid-belt', 'trip-into-the-future', 'death-valley'];
+const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes', 'moonlander', 'monsters-of-galacticon', 'alien-snipers', 'asteroid-belt', 'trip-into-the-future', 'death-valley', 'space-mines'];
 const MODES = new Set(['modern', 'retro']);
 
 function parseArgs(argv) {
@@ -552,6 +552,60 @@ async function runValley(page, args) {
   };
 }
 
+async function runMines(page, args) {
+  // A colony with enough in the bank that the strategy, not the dice, decides the run.
+  await command(page, 'setColony', { people: 70, mines: 7, money: 30000 });
+  await step(page, 2);
+  const startPeople = 70;
+  await page.screenshot({ path: path.join(args.outDir, '01-year-one.png') });
+
+  // Orders that cost more than the colony has must be refused. The engine
+  // records one press of a key per frame, so step between every press.
+  const tap = async key => { await page.keyboard.press(key); await step(page, 2); };
+  await tap('ArrowDown');
+  await tap('ArrowDown');
+  for (const digit of '999') await tap(digit);
+  const typed = gameSnapshot(await snapshot(page));
+  await tap('Enter');
+  const refused = typed.field === 'food' && typed.plan.food === 999
+    && gameSnapshot(await snapshot(page)).phase === 'decide';
+
+  let game = gameSnapshot(await snapshot(page));
+  for (let year = 0; year < 12 && game.phase !== 'debrief'; year += 1) {
+    game = gameSnapshot(await snapshot(page));
+    if (game.phase !== 'decide') break;
+    const c = game.colony;
+    const m = game.market;
+    // Buy happiness twice, then coast at the real floor of $80 a head.
+    const food = c.satisfaction < 12 ? 121 : 80;
+    const staffed = Math.floor(c.people / 10);
+    const sellMines = Math.max(0, c.mines - staffed);
+    const afterFood = c.money + c.ore * m.orePrice + sellMines * m.minePrice - food * c.people;
+    const buyMines = Math.max(0, Math.min(staffed - (c.mines - sellMines), Math.floor((afterFood - 4000) / m.minePrice)));
+    await command(page, 'setPlan', { sellOre: c.ore, sellMines, food, buyMines });
+    await step(page, 2);
+    if (year === 2) await page.screenshot({ path: path.join(args.outDir, '02-orders.png') });
+    await page.keyboard.press('Enter');
+    await step(page, 20);
+    if (year === 2) await page.screenshot({ path: path.join(args.outDir, '03-report.png') });
+    await page.keyboard.press('Enter');
+    await step(page, 4);
+    game = gameSnapshot(await snapshot(page));
+  }
+  await step(page, 30);
+  await page.screenshot({ path: path.join(args.outDir, '04-debrief.png') });
+  const current = await snapshot(page);
+  game = gameSnapshot(current);
+  return {
+    reachedDebrief: game.phase === 'debrief',
+    refused,
+    ending: game.debrief?.ending ?? null,
+    people: game.debrief?.people ?? null,
+    grew: (game.debrief?.people ?? 0) > startPeople,
+    finalSnapshot: current,
+  };
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   fs.mkdirSync(args.outDir, { recursive: true });
@@ -588,7 +642,9 @@ async function main() {
                       ? await runBelt(page, args)
                       : args.game === 'trip-into-the-future'
                         ? await runTrip(page, args)
-                        : await runValley(page, args);
+                        : args.game === 'death-valley'
+                          ? await runValley(page, args)
+                          : await runMines(page, args);
     report = { ...args, ...result, consoleErrors };
   } catch (error) {
     failure = error;
@@ -614,6 +670,11 @@ async function main() {
   }
   if (args.game === 'evil-alien' && args.mode === 'modern' && report.outcome !== 'destroyed') {
     throw new Error(`Expected Elron destroyed; got ${report.outcome}`);
+  }
+  if (args.game === 'space-mines' && args.mode === 'modern') {
+    if (!report.refused) throw new Error('Orders costing more than the colony has were accepted');
+    if (report.ending !== 'survived') throw new Error(`Expected to survive the term; got ${report.ending}`);
+    if (!report.grew) throw new Error(`Expected the colony to grow past 70 people; ended with ${report.people}`);
   }
   if (args.game === 'death-valley' && args.mode === 'modern') {
     if (!report.escaped) throw new Error(`Expected to clear the valley at width 12; crashed after ${report.rows} rows`);
