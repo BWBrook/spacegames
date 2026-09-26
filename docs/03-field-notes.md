@@ -188,6 +188,30 @@ A minimum-time descent, falling freely then braking hard and late, is on the gro
 
 ---
 
+## 12. Space Rescue
+
+**What it really is.** One budget spent against several risks. The same tank of energy must buy speed against a deadline, absorb random damage to two systems, and cover a landing whose demands you learn only roughly and only on arrival.
+
+**The numbers behind it.**
+- The time limit is `D/SQR(E/5)`, rounded, so about a fifth of the tank in the engines just makes it.
+- Velocity is `INT(SQR(P))`, so engine energy pays off only in perfect squares; 120 units buy the same speed as 100.
+- A safe landing needs up to 140 in boosters and 140 in heat shields, because you are told only whether gravity and atmosphere are low, medium or high and must cover the top of the band.
+
+**How hard it is.** Over 60,000 simulated missions, an even split never succeeds at all. Engines just past the limit as a perfect square, about 270 kept for landing and the rest split between the damage buffers, succeeds 52 per cent of the time, and most of the remainder is decided before the player types anything. Missions that start with 667 to 800 units of energy succeed 78 per cent of the time with that plan; those that start with 401 to 533, 20 per cent.
+
+**The door.** Line 810 demands more than 25 units left after landing. Nothing mentions it until then. A player who lands perfectly is told `YOU LANDED SUCCESSFULLY - WELL DONE` and then that there is not enough energy to open the door.
+
+**Quirks.**
+- No engine energy divides by zero at line 240; negative engine energy fails at line 230 with `-ve root`.
+- Engine trouble can wear the velocity to exactly zero, and line 460 divides by it before line 510 can report failed engines, so that message appears only when the velocity has gone negative, after the listing has announced a negative arrival time.
+- `ARRIVED IN n DAYS` prints even when you are dead, and failures stack: blown up, dead and late together.
+- Negative allocations are accepted; only the total is checked.
+- Shields survive at zero, life support does not.
+
+**What the lanes do.** The retro lane keeps every trap and the door. The reimagined lane keeps the rules, closes the crashes, and shows the odds of each risk while you plan and the coverage of each band while you land, with the door stated in advance.
+
+---
+
 ## Patterns across the anthology so far
 
 **The budget is always exactly enough.** Ten guesses for a 742-wide binary search, eight attempts for two axes needing five and seven bits, four bombs for three ternary searches, fourteen turns of fuel for a nine-turn descent. Whoever tuned these listings tuned them carefully, and the margin is consistently thin enough to punish sloppiness and wide enough to reward method.
@@ -205,5 +229,7 @@ A minimum-time descent, falling freely then braking hard and late, is on the gro
 **Some quirks belong to the port, not the book.** Our canon is a BBC conversion, recognisable by BBC-only commands such as `MODE 7` and `*FX15`, and at least one bug is almost certainly the converter's. Asteroid Belt's crash detection was written for a key read that returns 0 when nothing is pressed and broke when it was translated into one that returns −49. Galacticon's weapon table cuts the other way: it only works where a true comparison is −1, which the BBC satisfies and the Sinclair machines the book also served do not. Writing one listing for six dialects on machines with a few kilobytes of memory and no way to test on all of them, some of this was inevitable.
 
 **The machine is part of the game.** Several listings run flat out or wait on the keyboard, and so inherit their pace and their feel from the BBC itself: Death Valley's scroll rate is the interpreter's speed, its steering is shaped by the keyboard's auto-repeat, and Beat The Bug Eyes and Alien Snipers are shaped by its keyboard buffer. Reproducing them faithfully means emulating the machine as well as the program, which is why the retro lanes now share a timing module and a number formatter.
+
+**Two of them keep a rule secret until it has already cost you.** Space Rescue's door requirement and Space Mines' overworked starts both catch a player who has done everything the game asked, with nothing on screen to warn them. Hidden rules of that kind are where the reimagined lanes lean hardest on disclosure.
 
 **Two of them hide a structure that collapses the search.** Moonlander's fuel is secretly a clock, and Galacticon's weapon table is secretly a rotation. In both cases a player who sees it stops playing the stated game and starts playing a much easier one. Neither the listing nor the book says a word about either.

@@ -4,7 +4,7 @@ import { chromium, webkit } from 'playwright';
 
 const DEFAULT_URL = 'http://127.0.0.1:5173';
 const BROWSERS = { chromium, webkit };
-const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes', 'moonlander', 'monsters-of-galacticon', 'alien-snipers', 'asteroid-belt', 'trip-into-the-future', 'death-valley', 'space-mines'];
+const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes', 'moonlander', 'monsters-of-galacticon', 'alien-snipers', 'asteroid-belt', 'trip-into-the-future', 'death-valley', 'space-mines', 'space-rescue'];
 const MODES = new Set(['modern', 'retro']);
 
 function parseArgs(argv) {
@@ -606,6 +606,65 @@ async function runMines(page, args) {
   };
 }
 
+// Energy well above what the listing can roll, so each assertion is certain.
+const RESCUE_MISSIONS = [
+  { distance: 200, energy: 1400, timeLimit: 16 },
+  { distance: 200, energy: 1400, timeLimit: 16 },
+  { distance: 200, energy: 1400, timeLimit: 16 },
+];
+
+async function runRescue(page, args) {
+  await command(page, 'setMissions', RESCUE_MISSIONS);
+  await step(page, 2);
+
+  // No engine energy must be refused, where the listing divides by zero.
+  await command(page, 'setAllocation', { engines: 0, life: 400, shields: 400 });
+  await step(page, 2);
+  await page.keyboard.press('Enter');
+  await step(page, 2);
+  const refused = gameSnapshot(await snapshot(page)).phase === 'allocate';
+  await page.screenshot({ path: path.join(args.outDir, '01-allocate.png') });
+
+  const fly = async (life, boostersHeat) => {
+    await command(page, 'setAllocation', { engines: 225, life, shields: 400 });
+    await step(page, 2);
+    await page.keyboard.press('Enter');
+    await step(page, 2);
+    for (let i = 0; i < 4000 && gameSnapshot(await snapshot(page)).phase === 'voyage'; i += 1) await step(page, 6);
+    let game = gameSnapshot(await snapshot(page));
+    if (game.phase === 'landing') {
+      await command(page, 'setLanding', boostersHeat(game.orbit));
+      await step(page, 2);
+      await page.screenshot({ path: path.join(args.outDir, `02-landing-${game.index + 1}.png`) });
+      await page.keyboard.press('Enter');
+      await step(page, 2);
+      for (let i = 0; i < 400 && gameSnapshot(await snapshot(page)).phase === 'descent'; i += 1) await step(page);
+    }
+    await step(page, 30);
+    game = gameSnapshot(await snapshot(page));
+    await page.keyboard.press('Enter');
+    await step(page, 4);
+    return game.results.at(-1);
+  };
+  const safe = () => ({ boosters: 140, heat: 140 });
+  const tightDoor = orbit => ({ boosters: 140, heat: orbit.surplus - 140 - 20 });
+  const first = await fly(400, safe);
+  const second = await fly(0, safe);
+  const third = await fly(400, tightDoor);
+
+  await step(page, 30);
+  await page.screenshot({ path: path.join(args.outDir, '03-debrief.png') });
+  const current = await snapshot(page);
+  const game = gameSnapshot(current);
+  return {
+    reachedDebrief: game.phase === 'debrief',
+    refused,
+    outcomes: [first, second, third].map(r => (r?.rescued ? 'rescued' : r?.failures.join('+'))),
+    rank: game.debrief?.rank ?? null,
+    finalSnapshot: current,
+  };
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   fs.mkdirSync(args.outDir, { recursive: true });
@@ -644,7 +703,9 @@ async function main() {
                         ? await runTrip(page, args)
                         : args.game === 'death-valley'
                           ? await runValley(page, args)
-                          : await runMines(page, args);
+                          : args.game === 'space-mines'
+                            ? await runMines(page, args)
+                            : await runRescue(page, args);
     report = { ...args, ...result, consoleErrors };
   } catch (error) {
     failure = error;
@@ -670,6 +731,14 @@ async function main() {
   }
   if (args.game === 'evil-alien' && args.mode === 'modern' && report.outcome !== 'destroyed') {
     throw new Error(`Expected Elron destroyed; got ${report.outcome}`);
+  }
+  if (args.game === 'space-rescue' && args.mode === 'modern') {
+    if (!report.refused) throw new Error('A launch with no engine energy was accepted');
+    const expected = ['rescued', 'dead', 'door'];
+    if (JSON.stringify(report.outcomes) !== JSON.stringify(expected)) {
+      throw new Error(`Expected ${expected.join(', ')}; got ${report.outcomes.join(', ')}`);
+    }
+    if (report.rank !== 'Lieutenant Commander') throw new Error(`Expected one rescue's rank; got ${report.rank}`);
   }
   if (args.game === 'space-mines' && args.mode === 'modern') {
     if (!report.refused) throw new Error('Orders costing more than the colony has were accepted');

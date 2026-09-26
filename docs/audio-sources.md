@@ -39,5 +39,10 @@
 | `mines/fail` | reuses `starship/failure` | Parallax | A leak, or losing office. |
 | `mines/refused` | reuses `starship/vent` | Sci-Fi Energy Weapons | Orders the colony cannot afford. |
 | `mines/term` | reuses `starship/success` | Parallax | Surviving the term. |
+| `rescue/launch` | reuses `starship/ignition` | Sci-Fi Energy Weapons | Launch. |
+| `rescue/hazard` | reuses `starship/warning` | Parallax | Trouble on the voyage. |
+| `rescue/refused` | reuses `starship/vent` | Sci-Fi Energy Weapons | A plan the ship cannot fly. |
+| `rescue/landed` | reuses `starship/success` | Parallax | A rescue. |
+| `rescue/lost` | reuses `starship/failure` | Parallax | A failed mission. |
 
 All material originates from the free **Sci-Fi Sound Effects** bundle on 99Sounds (Rescopic Sound, 24-bit/96 kHz WAV, royalty-free for commercial use). See https://99sounds.org/sci-fi-sounds/ for license terms. The original pack is not stored in this repo; the filenames above preserve provenance, while the playable derivatives live under `public/audio/`.
