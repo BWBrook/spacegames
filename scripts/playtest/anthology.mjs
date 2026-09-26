@@ -4,7 +4,7 @@ import { chromium, webkit } from 'playwright';
 
 const DEFAULT_URL = 'http://127.0.0.1:5173';
 const BROWSERS = { chromium, webkit };
-const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes', 'moonlander', 'monsters-of-galacticon', 'alien-snipers', 'asteroid-belt', 'trip-into-the-future', 'death-valley', 'space-mines', 'space-rescue'];
+const GAMES = ['starship-takeoff', 'intergalactic-games', 'evil-alien', 'beat-the-bug-eyes', 'moonlander', 'monsters-of-galacticon', 'alien-snipers', 'asteroid-belt', 'trip-into-the-future', 'death-valley', 'space-mines', 'space-rescue', 'touchdown'];
 const MODES = new Set(['modern', 'retro']);
 
 function parseArgs(argv) {
@@ -665,6 +665,96 @@ async function runRescue(page, args) {
   };
 }
 
+// Touchdown's physics, so the runner can plan a landing for fixed conditions.
+function touchdownFly(V0, G, plan) {
+  let H = 100, F = 100, T = 0, V = V0;
+  for (let t = 0; t < 400; t += 1) {
+    const k = plan(t, { H, V, F, T });
+    if (k.up) T = Math.min(100, T + 4);
+    if (k.down) T = Math.max(0, T - 4);
+    if (T > F) T = F;
+    const V1 = V - T / 20 + G; F -= T / 10;
+    const H1 = H - (V + V1) / 10;
+    if (H1 < 0) return V + V1 < 8 ? 'safe' : 'crash';
+    H = H1; V = V1;
+    if (H > 100) return 'lost';
+  }
+  return 'timeout';
+}
+function touchdownProject(s, G) {
+  let { H, V, F } = s; let T = Math.min(s.T, F);
+  for (let i = 0; i < 400; i += 1) {
+    if (T > F) T = F;
+    const V1 = V - T / 20 + G; F -= T / 10;
+    const H1 = H - (V + V1) / 10;
+    if (H1 < 0) return { lands: true, speed: V + V1 };
+    if (V1 <= 0) return { lands: false };
+    H = H1; V = V1;
+  }
+  return { lands: false };
+}
+function touchdownPlan(V0, G) {
+  const trim = s => {
+    const held = touchdownProject(s, G);
+    if (held.lands && held.speed >= 7.9) return { up: true, down: false };
+    const eased = touchdownProject({ ...s, T: Math.max(0, s.T - 4) }, G);
+    if (!held.lands || (eased.lands && eased.speed < 7.9)) return { up: false, down: true };
+    return { up: false, down: false };
+  };
+  for (let start = 0; start <= 36; start += 1) {
+    for (const cap of [24, 40, 56, 72, 100]) {
+      const plan = (t, s) => (t < start ? { up: false, down: false } : s.T < cap && t < start + cap / 4 ? { up: true, down: false } : trim(s));
+      if (touchdownFly(V0, G, plan) === 'safe') return plan;
+    }
+  }
+  return null;
+}
+
+async function runTouchdown(page, args) {
+  const conditions = [{ velocity: 12, gravity: 0.6 }, { velocity: 8, gravity: 0.5 }, { velocity: 10, gravity: 0.7 }];
+  const held = {};
+  const keys = async want => {
+    for (const [key, on] of [['ArrowUp', want.up], ['ArrowDown', want.down]]) {
+      if (on && !held[key]) await page.keyboard.down(key);
+      if (!on && held[key]) await page.keyboard.up(key);
+      held[key] = on;
+    }
+  };
+  for (let n = 0; n < conditions.length; n += 1) {
+    const { velocity, gravity } = conditions[n];
+    await command(page, 'setCraft', { velocity, gravity, height: 100, fuel: 100, thrust: 0 });
+    await step(page, 24);
+    if (n === 0) await page.screenshot({ path: path.join(args.outDir, '01-briefing.png') });
+    await page.keyboard.press('Enter');
+    await step(page, 2);
+    // The third landing is left to fall, to make sure a crash fails the test.
+    const plan = n < 2 ? touchdownPlan(velocity, gravity) : null;
+    let game = gameSnapshot(await snapshot(page));
+    for (let t = 0; t < 400 && game.phase === 'flight'; t += 1) {
+      const c = game.craft;
+      await keys(plan ? plan(game.ticks, { H: c.height, V: c.velocity, F: c.fuel, T: c.thrust }) : { up: false, down: false });
+      const before = game.ticks;
+      for (let i = 0; i < 20 && (game = gameSnapshot(await snapshot(page))).ticks === before && game.phase === 'flight'; i += 1) await step(page);
+      if (n === 0 && t === 30) await page.screenshot({ path: path.join(args.outDir, '02-flight.png') });
+    }
+    await keys({ up: false, down: false });
+    await step(page, 110);
+    await page.keyboard.press('Enter');
+    await step(page, 4);
+  }
+  await step(page, 30);
+  await page.screenshot({ path: path.join(args.outDir, '03-report.png') });
+  const current = await snapshot(page);
+  const game = gameSnapshot(current);
+  return {
+    reachedDebrief: game.phase === 'debrief',
+    grades: game.landings.map(l => l.grade),
+    passed: game.debrief?.passed ?? null,
+    safe: game.debrief?.safe ?? null,
+    finalSnapshot: current,
+  };
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   fs.mkdirSync(args.outDir, { recursive: true });
@@ -705,7 +795,9 @@ async function main() {
                           ? await runValley(page, args)
                           : args.game === 'space-mines'
                             ? await runMines(page, args)
-                            : await runRescue(page, args);
+                            : args.game === 'space-rescue'
+                              ? await runRescue(page, args)
+                              : await runTouchdown(page, args);
     report = { ...args, ...result, consoleErrors };
   } catch (error) {
     failure = error;
@@ -731,6 +823,13 @@ async function main() {
   }
   if (args.game === 'evil-alien' && args.mode === 'modern' && report.outcome !== 'destroyed') {
     throw new Error(`Expected Elron destroyed; got ${report.outcome}`);
+  }
+  if (args.game === 'touchdown' && args.mode === 'modern') {
+    const [first, second, third] = report.grades;
+    const unsafe = ['Crashed', 'Lost in space'];
+    if (unsafe.includes(first) || unsafe.includes(second)) throw new Error(`Planned landings should be safe; got ${report.grades.join(', ')}`);
+    if (third !== 'Crashed') throw new Error(`An unpowered landing should crash; got ${third}`);
+    if (report.passed !== false || report.safe !== 2) throw new Error('Two safe landings out of three must fail the test');
   }
   if (args.game === 'space-rescue' && args.mode === 'modern') {
     if (!report.refused) throw new Error('A launch with no engine energy was accepted');

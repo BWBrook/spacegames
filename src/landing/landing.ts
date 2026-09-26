@@ -24,7 +24,7 @@ export function buildLanding({ root, manifest, onSelect }: LandingOptions) {
   const footer = el('footer', 'landing-footer');
   footer.innerHTML = `
     <p>Sources are the BBC Micro listings from the book's DFS disk image. In a game, <kbd>Esc</kbd> returns here.</p>
-    <p>${manifest.length} of 13 games so far.</p>
+    <p>${manifest.length === 13 ? 'All thirteen games from the book.' : `${manifest.length} of 13 games so far.`}</p>
   `;
 
   root.append(header, grid, footer);

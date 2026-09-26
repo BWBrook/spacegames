@@ -13,6 +13,7 @@ const ICONS: Record<string, string> = {
   'death-valley': `<svg ${ATTRS}><path d="M8 4c4 6-2 10 2 16s-4 10 0 16 2 8 2 8"/><path d="M40 4c-4 6 2 10-2 16s4 10 0 16-2 8-2 8"/><path d="M24 24l-4 9h8z"/></svg>`,
   'space-mines': `<svg ${ATTRS}><path d="M4 40h40"/><path d="M10 40l6-20 6 20M16 20v-6"/><circle cx="16" cy="12" r="3"/><path d="M28 40c0-6 3-9 7-9s7 3 7 9"/><path d="M33 34h4"/></svg>`,
   'space-rescue': `<svg ${ATTRS}><path d="M8 38c8-2 14-8 18-16"/><circle cx="36" cy="12" r="6"/><path d="M22 26l6-2-2 6z"/><path d="M18 36h12M24 30v12"/></svg>`,
+  touchdown: `<svg ${ATTRS}><path d="M24 8l-9 9-2 13h22l-2-13z"/><path d="M13 30l-5 8M35 30l5 8"/><path d="M20 30l4 7 4-7"/><path d="M4 42h40"/></svg>`,
 };
 
 const FALLBACK = `<svg ${ATTRS}><circle cx="24" cy="24" r="14"/><path d="M24 10v28M10 24h28"/></svg>`;
