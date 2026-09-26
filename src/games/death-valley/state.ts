@@ -1,4 +1,4 @@
-import { centiseconds, emptyLoopSeconds } from '../../core/bbcTiming';
+import { centiseconds, statementSeconds } from '../../core/bbcTiming';
 
 export const VALLEY_RULES = {
   /** Line 30: M=200 rows to survive. */
@@ -28,16 +28,12 @@ export function rollDrift(left: number, rng: () => number = Math.random) {
  * The listing runs flat out, so a row takes as long as BBC BASIC needs to
  * execute it: about thirty statements, plus two for every space printed in
  * the GOSUB 1000 loops, then an INKEY$(1) that waits a centisecond if no key
- * is waiting. Statements that do work cost about a quarter more than the bare
- * NEXT the shared constant measures. This puts a width-15 valley at roughly
- * nine rows a second, and it is the one invented number in the lane.
+ * is waiting. This puts a width-15 valley at roughly nine rows a second.
  */
 const ROW_STATEMENTS = 30;
-const STATEMENT_WEIGHT = 1.25;
 
 export function rowSeconds(spaces: number, keyWaiting: boolean) {
-  return emptyLoopSeconds(ROW_STATEMENTS + 2 * spaces) * STATEMENT_WEIGHT
-    + (keyWaiting ? 0 : centiseconds(1));
+  return statementSeconds(ROW_STATEMENTS + 2 * spaces) + (keyWaiting ? 0 : centiseconds(1));
 }
 
 /** The BBC's default auto-repeat, as best established: half a second, then every 8 centiseconds. */
