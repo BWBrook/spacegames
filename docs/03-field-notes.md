@@ -212,24 +212,38 @@ A minimum-time descent, falling freely then braking hard and late, is on the gro
 
 ---
 
-## Patterns across the anthology so far
+## 13. Touchdown
 
-**The budget is always exactly enough.** Ten guesses for a 742-wide binary search, eight attempts for two axes needing five and seven bits, four bombs for three ternary searches, fourteen turns of fuel for a nine-turn descent. Whoever tuned these listings tuned them carefully, and the margin is consistently thin enough to punish sloppiness and wide enough to reward method.
+**What it really is.** The one listing written for the BBC Micro itself rather than for six machines at once: MODE 5 graphics, a lander drawn in outline, four instrument bars, and the keyboard read directly, running as fast as the interpreter allows.
 
-**The intros know things the listings do not say.** Starship's intro admits you are guessing. Moonlander's states the hover rule that the arithmetic only implies. Evil Alien's and Beat The Bug Eyes' both describe a closing threat that the listing never implements, which is where both reimagined lanes found their expansion.
+**The instructions are backwards.** The intro says A increases the thrust and D decreases it. The listing raises it on `INKEY(-51)` and lowers it on `INKEY(-66)`, and in the BBC's key table −51 is D and −66 is A. A player who trusts the intro cuts the thrust when they mean to add it and crashes, or adds it when they mean to ease off and is lost in space.
 
-**Most of these are search problems wearing costumes.** Five of the first six reduce to searching a space under a budget. The presentation differs wildly and the underlying activity barely does.
+**Thrust is capped by the fuel left.** So the fuel never quite runs out, full thrust is unreachable, and ramping flat out from zero peaks at 58 before decaying by a tenth each pass. The whole tank removes exactly 50 units of velocity.
 
-**One of them teaches the wrong physics.** Trip Into The Future is the book's only game about real science, and it assigns distance over speed to the traveller's clock instead of Earth's. A player who understands relativity will lose to it.
+**The lesson is timing.** Unpowered, the craft reaches the ground in two to four seconds; the lever takes nearly one and a half to reach peak thrust. A pilot who fights the fall from the top lands a quarter of the time. One who lets it drop and then commits lands every one of the 400 possible starting conditions. Slow starts are the hard ones, because a longer descent gives gravity more time against a fixed budget.
 
-**One of them is simply broken, and it is not a quirk.** Alien Snipers never tells you whether you hit. Everything else in the anthology at least closes the loop, however tersely. That single omission is the difference between a game and a test.
+**Quirks.** `*FX12,1` sets the fastest possible auto-repeat and every pass flushes the keyboard buffer, neither of which touches a key read directly. The craft flickers because it is erased and redrawn every pass. The intro misspells "pressing" and runs "all the" together.
 
-**Some bugs are typing slips on a BBC keyboard.** Space Mines' `RND81)` is `RND(1)` with the Shift missed, since the BBC's opening bracket is Shift and 8. Whoever typed these listings into a BBC left marks of the machine in the code as well as in its behaviour.
+**What the lanes do.** The retro lane shows the intro, then runs the listing on a small MODE 5 emulation with its reversed keys intact. The reimagined lane makes it Captain Flash's three-landing test, with the intro's intended keys, the fuel ceiling drawn on the thrust gauge, and the examiner telling you, among other things, not to spend your thrust at the top.
 
-**Some quirks belong to the port, not the book.** Our canon is a BBC conversion, recognisable by BBC-only commands such as `MODE 7` and `*FX15`, and at least one bug is almost certainly the converter's. Asteroid Belt's crash detection was written for a key read that returns 0 when nothing is pressed and broke when it was translated into one that returns −49. Galacticon's weapon table cuts the other way: it only works where a true comparison is −1, which the BBC satisfies and the Sinclair machines the book also served do not. Writing one listing for six dialects on machines with a few kilobytes of memory and no way to test on all of them, some of this was inevitable.
+---
 
-**The machine is part of the game.** Several listings run flat out or wait on the keyboard, and so inherit their pace and their feel from the BBC itself: Death Valley's scroll rate is the interpreter's speed, its steering is shaped by the keyboard's auto-repeat, and Beat The Bug Eyes and Alien Snipers are shaped by its keyboard buffer. Reproducing them faithfully means emulating the machine as well as the program, which is why the retro lanes now share a timing module and a number formatter.
+## Patterns across the anthology
 
-**Two of them keep a rule secret until it has already cost you.** Space Rescue's door requirement and Space Mines' overworked starts both catch a player who has done everything the game asked, with nothing on screen to warn them. Hidden rules of that kind are where the reimagined lanes lean hardest on disclosure.
+**The budget is always exactly enough.** Ten guesses for a 742-wide binary search, eight attempts for two axes needing five and seven bits, four bombs for three ternary searches, fourteen turns of fuel for a nine-turn descent, a tank in Touchdown that removes exactly 50 units of velocity. Whoever tuned these listings tuned them carefully, and the margin is consistently thin enough to punish sloppiness and wide enough to reward method.
 
-**Two of them hide a structure that collapses the search.** Moonlander's fuel is secretly a clock, and Galacticon's weapon table is secretly a rotation. In both cases a player who sees it stops playing the stated game and starts playing a much easier one. Neither the listing nor the book says a word about either.
+**Most of them are search or budgeting problems in costume.** Starship, Intergalactic Games and Evil Alien are searches under a guess limit; Moonlander, Space Rescue and Touchdown are budgets spent against gravity, time or risk; Galacticon is a search for a hidden table. The presentation varies wildly and the underlying activity much less.
+
+**Several hide a structure that collapses the problem.** Moonlander's fuel is secretly a clock. Galacticon's weapon table is secretly a rotation, so one observation fixes a whole row. Space Mines' satisfaction never wears off, so two generous years buy growth for good. Space Rescue's engine energy only counts in perfect squares. Touchdown rewards waiting before the burn. Nothing in the book mentions any of these; each turns the stated game into a much easier one for a player who sees it.
+
+**The intros know things the listings do not say, and sometimes contradict them.** Starship's intro admits you are guessing and Moonlander's states the hover rule the arithmetic only implies. Evil Alien's and Beat The Bug Eyes' describe closing threats the listings never implement, which is where both reimagined lanes found their expansion. Touchdown's intro gets the controls backwards.
+
+**Some rules are kept secret until they have cost you.** Space Rescue's door, Space Mines' overworked starts, Touchdown's reversed keys: each catches a player who did everything the game asked, with nothing on screen to warn them. Disclosing hidden rules is the most common single change the reimagined lanes make.
+
+**One teaches the wrong physics, and one is simply broken.** Trip Into The Future, the book's only game about real science, assigns distance over speed to the traveller's clock instead of Earth's, so a player who understands relativity loses to it. Alien Snipers never tells you whether you hit, which is the difference between a game and a test.
+
+**Our canon is a BBC conversion, and it shows.** Asteroid Belt's crash detection was written for a key read that returns 0 when nothing is pressed and broke in translation to one that returns −49. Galacticon's weapon table works only where a true comparison is −1, which the BBC satisfies and the Sinclair machines the book also served do not. Space Mines' `RND81)` is `RND(1)` typed with the Shift missed, since the BBC's opening bracket is Shift and 8. Writing one listing for six dialects on machines with a few kilobytes of memory and no way to test on all of them, some of this was inevitable.
+
+**The machine is part of the game.** Listings that wait on the keyboard or never pause inherit their feel from the BBC: Death Valley's scroll rate and Touchdown's pace are the interpreter's speed, Death Valley's steering is shaped by the keyboard's auto-repeat, and Beat The Bug Eyes and Alien Snipers are shaped by its keyboard buffer. Reproducing them faithfully meant emulating the machine as well as the program, which is why the retro lanes share a timing module, a number formatter, a character grid and, for Touchdown, a sliver of MODE 5.
+
+**Division by zero is the commonest crash.** Trip Into The Future at both ends of its speed range, Space Mines on selling every mine, Space Rescue twice over. Each is a line that divides by a quantity the player controls and nothing checks.

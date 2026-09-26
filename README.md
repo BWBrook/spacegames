@@ -1,6 +1,8 @@
 # Spacegames
 
-Spacegames is a browser anthology of modern games re-imagined from the Usborne computer-game listings. Each entry has two lanes: a browser-native Retro BASIC recreation and an expanded TypeScript/Canvas version.
+Spacegames is a browser anthology of all thirteen games from Usborne's 1982 *Computer Spacegames*. Each game has two lanes: the original BBC Micro listing recreated faithfully in the browser, bugs and all, and a reimagining that keeps the original's central tension while adding what the listing lacked.
+
+The games: Starship Take-Off, Intergalactic Games, Evil Alien, Beat The Bug Eyes, Moonlander, Monsters of Galacticon, Alien Snipers, Asteroid Belt, Trip Into The Future, Death Valley, Space Mines, Space Rescue and Touchdown.
 
 ## Run It
 
@@ -29,7 +31,13 @@ pnpm build
 pnpm playtest -- --game starship-takeoff --mode modern --browser chromium
 ```
 
-The Playwright smoke runner accepts `starship-takeoff` and `intergalactic-games`, plus `modern` or `retro` modes. Use `--url` when a dev server is already running on another port.
+The Playwright smoke runner takes any game's id, `modern` or `retro`, and `chromium` or `webkit`. It needs the dev server running, because it drives the games through development-only hooks. Use `--url` when that server is on another port.
+
+## Reading
+
+- `docs/03-field-notes.md` is the best place to start: what each listing turns out to be once read closely, its quirks, and the patterns across all thirteen.
+- `docs/<game>.md` is each game's design document; `docs/manuals/` holds the player manuals and `docs/human_playtest/` the feedback forms.
+- `docs/01-dual-lane-anthology.md` sets out what each lane must do, and `docs/02-revisit-log.md` collects repairs worth making now the anthology is complete.
 
 ## Source
 
