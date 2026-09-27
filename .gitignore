@@ -6,3 +6,6 @@ __pycache__/
 *.py[cod]
 progress.md
 output/
+
+# Local reference material, never committed: copyrighted sources and anything extracted from them.
+reference/

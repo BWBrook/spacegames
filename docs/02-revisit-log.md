@@ -14,6 +14,7 @@ Things worth doing to games already built, noticed while building later ones. No
 ## Retro fidelity
 
 - **`ENTER A NUMBER.` is not a BBC message.** The retro lanes for Starship Take-Off, Intergalactic Games, Evil Alien and Moonlander print it when a line is blank or non-numeric. BBC `INPUT` into a numeric variable reads such a line as 0 and carries on. `readBbcNumber` in `src/core/bbcNumber.ts` does the right thing and Trip Into The Future uses it, because there a blank speed is one of the routes to a division by zero. The other four should follow; in Moonlander, for instance, a blank burn should simply be a burn of 0.
+- **Retro fidelity to the disk or to the book.** Every retro lane follows the disk. Asteroid Belt reproduces a bug that is almost certainly the BBC converter's rather than the book's. The printed book is now available as a local scan under `reference/book/` (untracked), so the two can be compared line by line and a decision made on where they disagree. The first discrepancy is Touchdown. The printed BBC version (PDF page 35, lines 540 and 550) raises thrust on `INKEY(-194)` and lowers it on `INKEY(-179)`. These are A's and D's codes (−66 and −51) offset by −128, so the book pairs the keys the way its own instructions do, while the disk swaps them. The field note calling the instructions backwards is therefore true of the disk and possibly not of the book. It is unverified whether `INKEY(-194)` reads A on a real BBC, since it lies outside the documented range of −1 to −128.
 - **Number formatting.** `formatBbcNumber` now prints nine significant figures as the BBC did, and Moonlander has been moved onto it. Its old formatter rounded to two decimal places, which only differed from the BBC for fractional burns. Every other retro lane prints integers only, so none needs it yet.
 
 - **Numeric form fields.** Space Mines and Space Rescue each carry their own field navigation, digit typing and Backspace handling on the canvas. Two copies of a genuinely fiddly piece of UI; if a third game ever wants one it should be shared, and it may be worth asking whether HTML form fields over the canvas would serve better.
@@ -29,8 +30,6 @@ Things worth doing to games already built, noticed while building later ones. No
 ## Settled along the way
 
 - **Empty-loop timing** was read three different ways across the first eight games: 1/250 s per iteration in Beat The Bug Eyes, an arbitrary 1.4 s in Galacticon, and nothing yet for Asteroid Belt, where the Bug Eyes reading would have paused six seconds between asteroids. All retro lanes now share `src/core/bbcTiming.ts` at BBC speed. Whether BBC speed feels right in Beat The Bug Eyes, where it makes the game very brisk, is a playtest question.
-
-- **Retro fidelity to the disk or to the book.** Asteroid Belt's retro lane reproduces a bug that is almost certainly the BBC converter's rather than the book's. So far every retro lane has been faithful to the disk. If the printed listings ever become available, it would be worth deciding whether the retro lanes should follow the book where the two disagree.
 
 - **Browser key-repeat versus the BBC's.** Death Valley's retro lane emulates the BBC's auto-repeat itself and ignores the browser's, so held keys behave the same on every machine. No other lane needed it, but any future real-time retro lane should do the same.
 
