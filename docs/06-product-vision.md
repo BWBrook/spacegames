@@ -83,7 +83,7 @@ The system has three shared parts, so that each game's cost is its composition a
 
 ## The path
 
-1. **Style frames.** A local page of still frames, one for each image Barry ranked. Each is judged on one question: does it feel like the book?
+1. **Style frames.** Built, and awaiting Barry's judgement: run `pnpm dev` and open `/style-frames.html`, or see the exports in `output/style-frames/`. They are drawn by the painter in `src/core/paint/` and the print system in `src/core/print/`, which the games will use. A local page of still frames, one for each image Barry ranked. Each is judged on one question: does it feel like the book?
    - The cover's idiom, for the landing page.
    - Trip's storybook.
    - Starship Take-Off's painted place.
