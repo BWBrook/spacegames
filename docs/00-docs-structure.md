@@ -55,6 +55,7 @@ That separation keeps design notes from turning into manuals, and keeps playtest
 - `docs/01-dual-lane-anthology.md` defines the Retro BASIC and Reimagined lane contract.
 - `docs/04-art-study.md` describes the book's art and its measured palettes, as the visual reference for the reimagined lanes. It is written from a private scan of the book in `reference/`, which Git ignores; nothing from that folder is ever committed or published.
 - `docs/05-book-vs-disk.md` compares each disk listing with the BBC listing printed in the book, from the same private scan, and records where they differ and why.
+- `docs/06-product-vision.md` sets out the reimagined anthology's direction: the book as the shell, spreads as screens, the robot help, the career, and the path from style frames to a pilot.
 - Future anthology-wide docs can live in numbered files like `docs/00-...md`, `docs/01-...md`, and so on.
 
 This gives us a stable pattern without over-engineering the repo before the next few games arrive.
