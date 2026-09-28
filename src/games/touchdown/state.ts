@@ -1,5 +1,3 @@
-import { statementSeconds } from '../../core/bbcTiming';
-
 export const TOUCHDOWN_RULES = {
   startHeight: 100,
   startFuel: 100,
@@ -11,11 +9,17 @@ export const TOUCHDOWN_RULES = {
 } as const;
 
 /**
- * Lines 60-170 run flat out, redrawing the craft twice and four bars each
- * pass. About eighty statement-equivalents, counting the triangle fills,
- * puts a tick at a tenth of a second on a BBC.
+ * Lines 60-170 run flat out, redrawing the craft twice and four filled bars
+ * each pass. Timed in jsbeeb over free-fall descents, a pass takes about a
+ * quarter of a second on a BBC, most of it the MODE 5 triangle fills.
  */
-export const TICK_SECONDS = statementSeconds(80);
+export const LISTING_PASS_SECONDS = 0.256;
+
+/**
+ * The reimagined lane runs the same passes ten times a second, the pace it
+ * was designed and tuned at, which suits a lander flown in real time.
+ */
+export const TICK_SECONDS = 0.1;
 
 /**
  * INKEY with a negative argument scans one key directly. In the BBC's key

@@ -2,7 +2,7 @@ import { formatBbcNumber } from '../../core/bbcNumber';
 import { RetroTerminal } from '../../core/retroTerminal';
 import type { RetroFactory } from '../types';
 import { Mode5 } from './mode5';
-import { LISTING_KEYS, TICK_SECONDS, isSafe, launchCraft, tick, touchdownSpeed } from './state';
+import { LISTING_KEYS, LISTING_PASS_SECONDS, isSafe, launchCraft, tick, touchdownSpeed } from './state';
 import type { Craft } from './state';
 
 type Stage = 'intro' | 'flying' | 'done';
@@ -152,8 +152,8 @@ export const createRetroGame: RetroFactory = ({ stage, manifest }) => {
       intro.update(dt);
       if (current !== 'flying') return;
       timer += dt;
-      while (current === 'flying' && timer >= TICK_SECONDS) {
-        timer -= TICK_SECONDS;
+      while (current === 'flying' && timer >= LISTING_PASS_SECONDS) {
+        timer -= LISTING_PASS_SECONDS;
         step();
       }
     },

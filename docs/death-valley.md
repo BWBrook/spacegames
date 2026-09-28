@@ -9,7 +9,7 @@
 Each row prints at the bottom and the screen scrolls up, so the ship is always on the newest line and the rows above it are history. There is no view ahead. The valley's next drift is unknown until it has already happened, and you steer in reaction to it. The trail of asterisks rising up the screen is a record of your own path.
 
 ## The scroll rate is the interpreter's
-The listing never pauses. A row takes as long as BBC BASIC needs to run it: roughly thirty statements, plus two for every space printed by the subroutine at line 1000, then an `INKEY$(1)` that waits a centisecond if no key is waiting. At the shared BBC speed, with statements that do work costed a quarter more than a bare `NEXT`, that is about **nine rows a second at width 15 and twelve at width 8**. A narrower valley prints fewer spaces, so it scrolls faster as well as leaving less room.
+The listing never pauses. A row takes as long as BBC BASIC needs to run it: timed in jsbeeb, about 35 ms of work plus 1.26 ms for every space printed by the subroutine at line 1000. Then `INKEY$(1)` returns at once if a key is waiting, and otherwise on the next centisecond tick, which rounds the row up to whole centiseconds. That is **fourteen rows a second at width 15 and seventeen at width 8**. A narrower valley prints fewer spaces, so it scrolls faster as well as leaving less room.
 
 The rate matters more than anything else in the game. Simulating a player who reacts a fixed number of rows late:
 
@@ -21,10 +21,10 @@ The rate matters more than anything else in the game. Simulating a player who re
 | 10 | 9 | 36 | always clears | never |
 | 8 | 7 | 23 | 0.1% | never |
 
-A typical human reaction of a quarter of a second is two to three rows at nine or ten rows a second. That reproduces the intro's advice exactly: 15 is comfortable, 10 and 12 are manageable, and 8 is quite difficult. An earlier estimate of fifteen rows a second would have made even width 15 a struggle, which is how the per-statement count was checked.
+A typical human reaction of a quarter of a second is two to three rows at nine or ten rows a second, which reproduces the intro's advice exactly: 15 is comfortable, 10 and 12 are manageable, and 8 is quite difficult. At the fourteen rows a second measured on a BBC it is three to four rows, between the table's last two columns. Four rows late, 15 clears one run in seven and 12 and below almost never. An earlier per-statement estimate of nine rows a second was taken as confirmed by that agreement until jsbeeb measured the machine. On a BBC the game was harder than the book says.
 
 ## Quirks
-- **Holding a key overshoots.** The BBC's auto-repeat, as best established, waits half a second and then repeats every eight centiseconds, about twelve times a second. That is faster than the scroll, so holding Q or P piles keys into the keyboard buffer and the ship carries on moving for several rows after you let go. In testing, three seconds of holding left six keys queued. Careful players tap.
+- **Holding a key overshoots.** The BBC's auto-repeat, as best established, waits half a second and then repeats every eight centiseconds, about twelve times a second. At the measured scroll rate that barely outpaces the rows, so little piles up in the keyboard buffer: after three seconds of holding, one key is left queued at width 15 and three at width 31, where rows are slowest. Careful players tap.
 - **Wide valleys scramble the screen.** A row is up to `20 + 2W + 3` characters. From width 18 up that can exceed the 40 columns of MODE 7 when the valley wanders right, and the line wraps. A row of exactly 40 also leaves a blank line after it, because the cursor has already wrapped when `PRINT`'s newline arrives. The retro lane reproduces both.
 - **Very narrow valleys are hopeless or instant.** Width 0 or 1, or a blank line, which `INPUT` reads as 0, gives no gap at all and crashes on the first row. Width 2 leaves one safe column and demands a perfect response on two rows in three.
 - **The valley never narrows.** The gaps either side of the ship always sum to twice the half-width. Difficulty is set entirely by the number you type.
@@ -33,7 +33,7 @@ A typical human reaction of a quarter of a second is two to three rows at nine o
 ## Retro BASIC Lane
 It uses `RetroTerminal`, which now has a `promptVisible` switch so a scrolling listing does not show an input prompt while it prints. It reproduces the width prompt, the halving, the random walk with its re-roll at the edges, each row exactly as printed, the crash check after the key, both endings, the per-row timing described above, the BBC keyboard buffer with a 31-key limit, the emulated auto-repeat, and the 40-column wrap.
 
-Verified by script: rows match the listing's format; width 15 prints nine rows a second and width 8 twelve; an unsteered ship crashes; a blank width crashes on the first row; holding P for three seconds queues six keys; and a player who taps once per row, only when the buffer is empty, clears all 200 rows at width 15.
+Verified by script: rows match the listing's format; width 15 prints fourteen rows a second and width 8 seventeen, matching jsbeeb's 70 and 60 ms rows; an unsteered ship crashes; a blank width crashes on the first row; holding a key for three seconds leaves one queued; and a player who taps once per row, only when the buffer is empty, clears all 200 rows at width 15.
 
 ## Reimagined Lane
 - **Fantasy** - The same ravine, flown in the dark with the Speed Dart's headlights.
@@ -41,11 +41,11 @@ Verified by script: rows match the listing's format; width 15 prints nine rows a
 - **Headlights, not hindsight.** This is the one deliberate change of kind. The ravine ahead is lit for six rows and falls away into darkness. That turns pure reaction into short-range anticipation, which is how every modern cave-flyer works, while keeping the warning short enough that the valley can still surprise you.
 - **What you see is what kills you.** The drawn cliff faces sit exactly at the crash boundary, one column in from where the listing's walls stand.
 - **Steering that can recover.** Held keys move the Dart a little faster than the valley can drift, and there is no buffer overrun.
-- **A pace that builds.** The run starts at nine rows a second, the retro lane's rate at width 15, and rises to fourteen by the end.
+- **A pace that builds.** The run starts at nine rows a second, the retro lane's rate before it was measured, and rises to fourteen by the end, which is what a real BBC ran at width 15.
 - **A trail** of your recent path fades behind the Dart, after the listing's asterisks.
 - **Scoring** rewards narrower valleys: rows survived times a multiplier that grows as the width falls, plus a completion bonus.
 
 ## Playtest Notes
 Verified by script on 23 September 2026: the retro checks above, and a modern autopilot steering at the valley centre a row ahead cleared all 200 rows at width 12 with at least four columns to spare throughout.
 
-Open questions for a human. Whether six rows of headlight is too generous, since it makes the modern lane far easier than the listing at the same width. Whether the per-statement estimate of the retro scroll rate feels like a BBC, which only someone who remembers one can judge. And whether the retro lane's auto-repeat overshoot reads as authentic or as a bug.
+Open questions for a human. Whether six rows of headlight is too generous, since it makes the modern lane far easier than the listing at the same width. Whether the measured retro scroll rate, much faster than the book's advice assumes, is still playable at the widths the intro suggests.

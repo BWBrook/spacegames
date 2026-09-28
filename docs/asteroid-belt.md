@@ -29,7 +29,7 @@ The structure of line 200 makes the intent plain. It is written for a key read t
 - **The title is never seen.** Line 10 prints `ASTEROID BELT` and line 40 clears the screen a moment later.
 
 ## Retro BASIC Lane
-It prints positionally, so it uses `RetroScreen`. It reproduces the rows of three at the rolled column and row, the 1.2 second `INKEY` window, every branch of lines 200 to 280 including the porting bug, the `*FX15` flush, the 1.5 second pause read at BBC speed, and the final score printed on the line after the last verdict, where the cursor would have been.
+It prints positionally, so it uses `RetroScreen`. It reproduces the rows of three at the rolled column and row, the 1.2 second `INKEY` window, every branch of lines 200 to 280 including the porting bug, the `*FX15` flush, the 1500-iteration pause read at BBC speed, just under a second, and the final score printed on the line after the last verdict, where the cursor would have been.
 
 Verified by script: the stars land in rows of three at the rolled column starting one line below the rolled row; the exact count destroys and scores; one too few, one too many, `0` and a timeout print `NOT STRONG ENOUGH`, `TOO STRONG`, `CRASHED INTO ASTEROID` and `NOT STRONG ENOUGH` respectively; a key struck during the pause does not carry into the next window; and the score line appears beneath the last verdict.
 

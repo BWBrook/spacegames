@@ -1,4 +1,4 @@
-import { centiseconds, statementSeconds } from '../../core/bbcTiming';
+import { centiseconds, nextCentisecondTick } from '../../core/bbcTiming';
 
 export const VALLEY_RULES = {
   /** Line 30: M=200 rows to survive. */
@@ -26,14 +26,17 @@ export function rollDrift(left: number, rng: () => number = Math.random) {
 
 /**
  * The listing runs flat out, so a row takes as long as BBC BASIC needs to
- * execute it: about thirty statements, plus two for every space printed in
- * the GOSUB 1000 loops, then an INKEY$(1) that waits a centisecond if no key
- * is waiting. This puts a width-15 valley at roughly nine rows a second.
+ * execute it. Timed in jsbeeb, the work is about 35.4 ms plus 1.26 ms for
+ * every space the GOSUB 1000 loops print. INKEY$(1) then returns at once if
+ * a key is waiting, and otherwise on the next centisecond tick, which puts a
+ * width-15 valley at 70 ms a row, about fourteen rows a second.
  */
-const ROW_STATEMENTS = 30;
+export const ROW_WORK = { fixedSeconds: 0.0354, perSpaceSeconds: 0.00126 } as const;
 
-export function rowSeconds(spaces: number, keyWaiting: boolean) {
-  return statementSeconds(ROW_STATEMENTS + 2 * spaces) + (keyWaiting ? 0 : centiseconds(1));
+/** The emulated clock after one row that starts at `clock`. */
+export function rowEnd(clock: number, spaces: number, keyWaiting: boolean) {
+  const worked = clock + ROW_WORK.fixedSeconds + ROW_WORK.perSpaceSeconds * spaces;
+  return keyWaiting ? worked : nextCentisecondTick(worked);
 }
 
 /** The BBC's default auto-repeat, as best established: half a second, then every 8 centiseconds. */

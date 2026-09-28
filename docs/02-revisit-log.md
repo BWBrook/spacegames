@@ -14,7 +14,7 @@ Things worth doing to games already built, noticed while building later ones. No
 ## Retro fidelity
 
 - **`ENTER A NUMBER.` is not a BBC message.** The retro lanes for Starship Take-Off, Intergalactic Games, Evil Alien and Moonlander print it when a line is blank or non-numeric. BBC `INPUT` into a numeric variable reads such a line as 0 and carries on. `readBbcNumber` in `src/core/bbcNumber.ts` does the right thing and Trip Into The Future uses it, because there a blank speed is one of the routes to a division by zero. The other four should follow; in Moonlander, for instance, a blank burn should simply be a burn of 0.
-- **Retro fidelity to the disk or to the book.** Every retro lane follows the disk. `docs/05-book-vs-disk.md` compares every disk listing with the book's printed BBC listing: eight behave differently, two differ only in wording and three are identical. It recommends keeping the disk, which Barry approved on 28 September 2026. It also settles Touchdown's keys: on OS 1.20 the book's `INKEY(-194)` does not read A, and the printed listing lets D raise the thrust with nothing to lower it. Asteroid Belt's unreachable crash turns out to be in the book's own BBC line, not a disk error. Its side findings found two retro lanes unfaithful to the disk itself, Space Mines' error message and Moonlander's hidden division by zero; both are now fixed, and the notes attribute each quirk to the book or the disk. Still open: the retro lanes' timing, below.
+- **Retro fidelity to the disk or to the book.** Every retro lane follows the disk. `docs/05-book-vs-disk.md` compares every disk listing with the book's printed BBC listing: eight behave differently, two differ only in wording and three are identical. It recommends keeping the disk, which Barry approved on 28 September 2026. It also settles Touchdown's keys: on OS 1.20 the book's `INKEY(-194)` does not read A, and the printed listing lets D raise the thrust with nothing to lower it. Asteroid Belt's unreachable crash turns out to be in the book's own BBC line, not a disk error. Its side findings found two retro lanes unfaithful to the disk itself, Space Mines' error message and Moonlander's hidden division by zero; both are now fixed, and the notes attribute each quirk to the book or the disk. The retro lanes' timing was then measured, below.
 - **BBC timing, measured.** Timed in jsbeeb on 28 September 2026. It uses the genuine OS 1.20 and BASIC II ROMs and measures emulated time through `TIME`, but it is an emulator, not hardware.
   - **Empty pause loops**, in the disk's form (`FOR` and `NEXT I` on separate lines): 0.646 ms an iteration, against the 1 ms in `bbcTiming.ts`. Every retro pause runs about 55 per cent long: Bug Eyes, Asteroid Belt, Galacticon and Space Rescue.
   - **`INKEY` waits:** `INKEY$(1)` waits exactly one centisecond tick and `INKEY(120)` exactly 1.20 s, so the centisecond model is right.
@@ -23,10 +23,12 @@ Things worth doing to games already built, noticed while building later ones. No
 
   The statement-count estimates were right for Death Valley's fixed work but twice too slow for its printing, and far too fast for MODE 5 filled triangles.
 
-  **Proposal, for Barry to decide:**
-  - Adopt the measurements: 0.646 ms empty loops, Death Valley's row cost with its tick rounding, and Touchdown's pass at about 0.26 s.
-  - Remove `BBC_STATEMENT_WEIGHT`, which nothing else would use.
-  - Update the Bug Eyes, Death Valley and Touchdown field notes to match, re-checking Death Valley's width advice and auto-repeat pile-up at the new rate.
+  **Adopted** on 28 September 2026, at Barry's decision:
+  - Empty loops now run at 0.646 ms.
+  - Death Valley's rows cost the measured work and are rounded to the next centisecond tick unless a key is waiting.
+  - Touchdown's retro passes take 0.256 s, while the reimagined lane keeps the tenth of a second it was designed at.
+  - `BBC_STATEMENT_WEIGHT` is gone.
+  - The field notes and design documents follow. At the measured rate Death Valley is much harder than the book's width advice suggests, and a held key barely queues.
 - **Number formatting.** `formatBbcNumber` now prints nine significant figures as the BBC did, and Moonlander has been moved onto it. Its old formatter rounded to two decimal places, which only differed from the BBC for fractional burns. Every other retro lane prints integers only, so none needs it yet.
 
 - **Numeric form fields.** Space Mines and Space Rescue each carry their own field navigation, digit typing and Backspace handling on the canvas. Two copies of a genuinely fiddly piece of UI; if a third game ever wants one it should be shared, and it may be worth asking whether HTML form fields over the canvas would serve better.
@@ -41,7 +43,7 @@ Things worth doing to games already built, noticed while building later ones. No
 
 ## Settled along the way
 
-- **Empty-loop timing** was read three different ways across the first eight games: 1/250 s per iteration in Beat The Bug Eyes, an arbitrary 1.4 s in Galacticon, and nothing yet for Asteroid Belt, where the Bug Eyes reading would have paused six seconds between asteroids. All retro lanes now share `src/core/bbcTiming.ts` at BBC speed. Whether BBC speed feels right in Beat The Bug Eyes, where it makes the game very brisk, is a playtest question.
+- **Empty-loop timing** was read three different ways across the first eight games: 1/250 s per iteration in Beat The Bug Eyes, an arbitrary 1.4 s in Galacticon, and nothing yet for Asteroid Belt, where the Bug Eyes reading would have paused six seconds between asteroids. All retro lanes now share `src/core/bbcTiming.ts` at BBC speed, measured in jsbeeb in September 2026 at 0.646 ms an iteration rather than the 1 ms first assumed. Whether BBC speed feels right in Beat The Bug Eyes, where it makes the game very brisk, is a playtest question.
 
 - **Browser key-repeat versus the BBC's.** Death Valley's retro lane emulates the BBC's auto-repeat itself and ignores the browser's, so held keys behave the same on every machine. No other lane needed it, but any future real-time retro lane should do the same.
 

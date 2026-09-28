@@ -21,7 +21,7 @@ The book's printed BBC version tests `INKEY(-194)` and `INKEY(-179)`, which are 
 Each pass, a held key moves the thrust by 4, gravity adds 0.41 to 0.80 to the velocity, thrust removes a twentieth of itself, and the fuel falls by a tenth of the thrust. Two rules shape everything:
 
 - **Thrust can never exceed the fuel left.** Line 560 caps it, so the fuel never quite runs out. Ramping flat out from zero, thrust peaks at 58 after about fourteen passes and then decays by a tenth each pass. Full thrust is unreachable, and the whole tank can remove exactly 50 units of velocity.
-- **The lever is slow and the fall is quick.** Unpowered, the craft hits the ground in 22 to 37 passes, about two to four seconds at the BBC's pace of ten a second, doing 21 to 32. Reaching peak thrust takes fourteen passes.
+- **The lever is slow and the fall is quick.** Unpowered, the craft hits the ground in 22 to 37 passes, doing 21 to 32. A BBC takes about a quarter of a second a pass, timed in jsbeeb, so that is 5.5 to 9.5 seconds. Reaching peak thrust takes fourteen passes.
 
 So the skill is timing, not effort. An instinctive pilot who fights the fall from the top spends the tank before the bottom: a pilot that brakes whenever the projected landing is too fast, which is always true at the start, lands only a quarter of the time. Letting the craft fall first and then committing to the burn lands every one of the 400 possible starting conditions. A slow start is harder than a fast one, because a longer descent gives gravity more time against a fixed budget.
 

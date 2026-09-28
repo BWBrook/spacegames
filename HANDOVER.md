@@ -40,7 +40,7 @@ state), `retro.ts`, `render.ts`, `index.ts`, and usually `types.ts`.
 
 Shared services in `src/core/` that the retro lanes depend on:
 
-- `bbcTiming.ts`: empty `FOR` loops and flat-out loops at BBC speed, and
+- `bbcTiming.ts`: empty `FOR` loops at the BBC speed measured in jsbeeb, the rounding of an `INKEY$(1)` poll to the next centisecond, and
   `INKEY` centiseconds. One reading for every lane.
 - `bbcNumber.ts`: nine-significant-figure `PRINT` output, and `INPUT` reading a
   blank line as 0.

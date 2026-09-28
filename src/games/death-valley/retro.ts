@@ -6,7 +6,7 @@ import {
   VALLEY_RULES,
   halfWidth,
   rollDrift,
-  rowSeconds,
+  rowEnd,
   screenLines,
   valleyRow,
 } from './state';
@@ -25,6 +25,7 @@ interface RetroState {
   gapLeft: number;
   gapRight: number;
   survived: number;
+  /** Seconds since the run began, and the emulated BBC time at which the next row prints. */
   timer: number;
   nextRow: number;
   buffer: string[];
@@ -122,7 +123,7 @@ export const createRetroGame: RetroFactory = ({ stage, manifest }) => {
     if (key === 'P') { state.gapLeft += 1; state.gapRight -= 1; }
 
     const spaces = state.left + Math.max(0, state.gapLeft) + Math.max(0, state.gapRight);
-    state.nextRow = rowSeconds(spaces, keyWaiting);
+    state.nextRow = rowEnd(state.nextRow, spaces, keyWaiting);
 
     if (state.gapLeft < 1 || state.gapRight < 1) {
       terminal.pushLine('YOU CRASHED INTO THE WALL');
@@ -161,10 +162,7 @@ export const createRetroGame: RetroFactory = ({ stage, manifest }) => {
         }
       }
       state.timer += dt;
-      while (state.stage === 'run' && state.timer >= state.nextRow) {
-        state.timer -= state.nextRow;
-        printRow();
-      }
+      while (state.stage === 'run' && state.timer >= state.nextRow) printRow();
     },
     render() {
       terminal.render();

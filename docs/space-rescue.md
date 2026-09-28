@@ -3,7 +3,7 @@
 ## BASIC Origins
 `basic/bbc/usborne-computer-space-games/12.bas` sends you across the spiral arm of the Galaxy with medical supplies. The distances are so great that you sleep for most of the trip, so before sleeping you program the ship, allocating energy to the engines, the life support system and the shields. On waking you get a report and, if all went well, you are in orbit, where you allocate what remains to landing boosters and heat shields. Succeed and you may be promoted to Space Admiral.
 
-`12SR.bas` rolls a distance of 101 to 900 units, an energy supply of 401 to 800, and a time limit. It asks for the three allocations, flies six to ten checks for trouble with a two-second pause between each, reports asteroid storms, computer breakdowns, engine trouble and X-ray bursts as they happen, then judges the arrival. In orbit it names the gravity and the atmosphere only as low, medium or high, asks for boosters and heat shields, and lands you or does not.
+`12SR.bas` rolls a distance of 101 to 900 units, an energy supply of 401 to 800, and a time limit. It asks for the three allocations, flies six to ten checks for trouble with a pause of 2000 empty iterations between each, about 1.3 seconds on a BBC, reports asteroid storms, computer breakdowns, engine trouble and X-ray bursts as they happen, then judges the arrival. In orbit it names the gravity and the atmosphere only as low, medium or high, asks for boosters and heat shields, and lands you or does not.
 
 ## What the numbers are
 - **The time limit is set by a fifth of the energy.** It is `INT(D/SQR(E/5)+.5)`, so putting about a fifth of the tank into the engines just makes it, before any trouble on the way.
