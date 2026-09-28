@@ -7,7 +7,7 @@ What the reimagined anthology is for, and the decisions that shape it. `docs/04-
 - Each reimagined lane should feel like its spread in the book come alive.
 - Opening the anthology should feel like opening the book.
 
-**Status.** Draft, 28 September 2026, written from Barry's answers to the art study's questions. It is awaiting his sign-off before any implementation.
+**Status.** Signed off by Barry on 28 September 2026: "I absolutely love the product vision." Implementation follows the path below, one gate at a time.
 
 ---
 
@@ -39,13 +39,13 @@ A draft order in five chapters. It uses the book's own fiction wherever it offer
 | II. Pilot | Alien Snipers, Intergalactic Games, Evil Alien, Monsters of Galacticon | Searches and deductions under a budget, from one axis to three and a hidden table. |
 | III. The Advanced Spacecraft Handling Test | Moonlander, Death Valley, Touchdown | Touchdown is Part III of this test in the book, with Captain Flash as the examiner. The book names only Part III, so casting Moonlander and Death Valley as Parts I and II is our invention: landing by the numbers, then flying the Speed Dart, then landing by hand. |
 | IV. Command | Space Mines, Space Rescue | A colony to run for ten years, then the mission the book says earns promotion to Space Admiral. |
-| Epilogue | Trip into the Future | The Admiral's last voyage returns to an Earth far in the future. It also ends the career on the book's hardest idea, relativity, and on the spread Barry remembers best. |
+| Epilogue | Trip into the Future | The Admiral's last voyage returns to an Earth far in the future. It also ends the career on the book's hardest idea, relativity, and on the spread Barry remembers best. In his words, "Having Trip last is coda." |
 
 What accumulates, as a first cut:
 
 - **A service record.** Every mission flown, its result, and commendations for the book's Puzzle-corner challenges. Rank rises as chapters close.
 - **The book's own carry-overs.** Intergalactic Games' Puzzle corner carries the bonus into the next launch, and Space Mines' carries the treasury into the next term. The career uses these where the book suggests them, rather than inventing a shared currency.
-- **Unlocking only in career mode.** Career mode opens chapters in order. Free play keeps every game and both lanes open at all times.
+- **Gated career, open free play.** Career mode opens its chapters in order, and free play keeps every game and both lanes open at all times. Barry: "Career mode should be gated. Free mode stays open."
 - **Local storage for now.** Progress lives in the browser, which suits `pnpm play` and a later offline build.
 
 ## How each lane should look
@@ -98,7 +98,7 @@ The system has three shared parts, so that each game's cost is its composition a
 4. **The career shell,** once three lanes carry the new art.
 5. **The remaining lanes,** in career order.
 
-## Open questions
+## Settled
 
-- Is the career order right, and is Trip as the epilogue a fitting end or a wait too long for the favourite spread? Free play keeps it one click away either way.
-- Should career mode open its chapters in order, as drafted, or leave every mission open and only keep the record?
+- The career order and Trip as the epilogue: "the career ladder progression feels right."
+- Career mode is gated; free play stays open.
