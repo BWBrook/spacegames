@@ -21,11 +21,11 @@ On a BBC, `INKEY(120)` returns the code of the key pressed, or −1 if nothing i
 
 So sitting still while an asteroid bears down on you is described as having hit it too gently, and the crash is reserved for a key that makes no sense to press, since no asteroid has zero stars.
 
-The structure of line 200 makes the intent plain. It is written for a key read that returns 0 when nothing was pressed, as `VAL(INKEY$)` does on most BASICs of the period, because `VAL("")` is 0. The BBC conversion replaced it with the numeric `INKEY(120)-48`, which agrees with `VAL` for every digit and differs only when no key arrives, which is exactly the case line 200 was there to catch. It is very probably not in the printed book.
+The structure of line 200 makes the intent plain. It is written for a key read that returns 0 when nothing was pressed, as `VAL(INKEY$)` does on most BASICs of the period, because `VAL("")` is 0. The BBC conversion replaced it with the numeric `INKEY(120)-48`, which agrees with `VAL` for every digit and differs only when no key arrives, which is exactly the case line 200 was there to catch. The conversion is the book's own. Its BBC substitutions delete the ZX81's polling loop and print `190 Q=INKEY(100)-48` beside an unchanged line 200. The disk inherited the bug and lengthened the wait to `INKEY(120)`. See `docs/05-book-vs-disk.md`.
 
 ## Other quirks
 - **Any key is a shot.** The value is simply the key's character code minus 48, so letters come out between 17 and 42 and always read `TOO STRONG`, and a space comes out at −16 and reads `NOT STRONG ENOUGH`.
-- **This listing flushes the keyboard; the others do not.** Line 305 issues `*FX15` after each pause, discarding anything typed meanwhile. Beat The Bug Eyes and Alien Snipers both lack it, so an early press in either is spent on the next target. Here it costs nothing.
+- **This listing flushes the keyboard; the others do not.** Line 305 issues `*FX15` after each pause, discarding anything typed meanwhile. The line is the disk's own; the book has no flush. Beat The Bug Eyes and Alien Snipers both lack it, so an early press in either is spent on the next target. Here it costs nothing.
 - **The title is never seen.** Line 10 prints `ASTEROID BELT` and line 40 clears the screen a moment later.
 
 ## Retro BASIC Lane
@@ -48,4 +48,4 @@ Verified by script on 23 September 2026:
 - Retro: every branch of the verdict logic, the flush, and the ending, as above.
 - Reimagined: a run with one deliberate miscount and one deliberate timeout scored 8 with exactly one crash and one miscount, and the runner fails if any of those three figures moves.
 
-Open questions for a human. Whether 1.2 seconds is fair for eight and nine. Whether the approach animation, even at full size from the start, makes counting harder than the static stars did. And whether the retro lane should keep the porting bug, which is faithful to the disk but almost certainly not to the book.
+Open questions for a human. Whether 1.2 seconds is fair for eight and nine. Whether the approach animation, even at full size from the start, makes counting harder than the static stars did. Whether the retro lane should keep the porting bug is settled: it is in the book's own BBC version as well as on the disk, so keeping it is faithful to both.

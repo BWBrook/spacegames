@@ -9,7 +9,7 @@
 ```basic
 500 IF S>1.1 THEN LET CE=CE+INT(RND81)*20+1)
 ```
-It should read `RND(1)`. On a BBC Micro keyboard the opening bracket is Shift and 8, so `RND81)` is exactly what the keys produce when the typist misses the Shift. BBC BASIC only checks a statement's syntax when it runs it, and the `THEN` clause only runs when satisfaction is above 1.1, so the listing loads, runs and plays normally until you do well. Then it stops with `Missing ) at line 500`.
+It should read `RND(1)`, as the book prints it. On a BBC Micro keyboard the opening bracket is Shift and 8, so `RND81)` is exactly what the keys produce when the typist misses the Shift. BBC BASIC turns `RND` into a keyword only when no letter or digit follows, so the disk's tokenised line holds the letters of a variable called `RND81` that is never set. BBC BASIC only evaluates a statement when it runs it, and the `THEN` clause only runs when satisfaction is above 1.1, so the listing loads, runs and plays normally until you do well. Then it stops with `No such variable at line 500`.
 
 **Being a good leader crashes the game.** One generous year takes satisfaction to exactly 1.1, which is safe. The second takes it to 1.2, and the program halts. The consequences run further than the crash:
 
@@ -30,17 +30,17 @@ What is left is a game about not rocking the boat. Simulating 40,000 runs, a str
 - **Falling production can freeze the game.** Production drops each year satisfaction is below 0.9 and nothing stops it going below zero. Once it does, the ore store goes negative and line 260 rejects every possible answer, so the ore prompt repeats for ever. It happens in about three runs in a hundred for a leader who skimps once and then spends moderately.
 - **You never see the disasters happen.** The leak and glut messages print at the end of a year and line 110 clears the screen immediately afterwards. The first sign of a leak is half your people missing next year.
 - **A food price is rolled and never used.** Line 40 sets `FP`; nothing reads it.
-- **`THERRE ARE`** is misspelt on line 140, and on a BBC the year prints as `YEAR1`, because BBC BASIC puts no space before a positive number where the Microsoft BASICs of the day did.
+- **`THERRE ARE`** is the disk's misspelling on line 140; the book prints `THERE ARE`. On a BBC the year prints as `YEAR1`, because BBC BASIC puts no space before a positive number where the Microsoft BASICs of the day did.
 - **Fractions are allowed.** You can sell half a ton of ore or buy half a mine.
 - **There is no score.** Surviving is the whole goal; money left over counts for nothing.
 
 ## Retro BASIC Lane
-A prompt loop on `RetroTerminal`, faithful to the disk: the screen and its typo, the four prompts with their re-asks, BBC `INPUT` reading a blank line as 0, every end-of-year rule in the listing's order, the syntax error at line 500, the division by zero at line 520, the endless ore prompt, the leak and glut messages cleared before they can be read, and nine-significant-figure numbers. Satisfaction uses ordinary floating point; where a run of stingy budgets tips into revolt could differ by a year from a real BBC, whose 40-bit floats round differently near 0.6.
+A prompt loop on `RetroTerminal`, faithful to the disk: the screen and its typo, the four prompts with their re-asks, BBC `INPUT` reading a blank line as 0, every end-of-year rule in the listing's order, the undefined variable at line 500, the division by zero at line 520, the endless ore prompt, the leak and glut messages cleared before they can be read, and nine-significant-figure numbers. Satisfaction uses ordinary floating point; where a run of stingy budgets tips into revolt could differ by a year from a real BBC, whose 40-bit floats round differently near 0.6.
 
-Verified by script: the opening screen reads `YEAR1` and `THERRE ARE`; an over-large answer reprints its prompt; one generous year leaves satisfaction at 1.1 and the second stops the program with `Missing ) at line 500`; selling every mine stops it with `Division by zero at line 520`; an overworked start that sells nothing ends in `YOU'VE OVERWORKED EVERYONE`; three stingy years end in `THE PEOPLE REVOLTED`; and a frugal term at $80 a head survives.
+Verified by script: the opening screen reads `YEAR1` and `THERRE ARE`; an over-large answer reprints its prompt; one generous year leaves satisfaction at 1.1 and the second stops the program with `No such variable at line 500`; selling every mine stops it with `Division by zero at line 520`; an overworked start that sells nothing ends in `YOU'VE OVERWORKED EVERYONE`; three stingy years end in `THE PEOPLE REVOLTED`; and a frugal term at $80 a head survives.
 
 ## Reimagined Lane
-- **The intended rules.** Line 500 works, so a happy colony grows, its mines improve, and gluts arrive once production passes 150 tons. The disk's other hazards are closed: no mines means no ore rather than a division by zero, and production stops at zero.
+- **The book's rules.** Line 500 works as printed, so a happy colony grows, its mines improve, and gluts arrive once production passes 150 tons. The disk's other hazards are closed: no mines means no ore rather than a division by zero, and production stops at zero.
 - **A colony you can see.** A headframe for every mine, a dome for every dozen people with lights that dim as satisfaction falls, and an ore heap that grows in the store.
 - **The rules on the page.** As you set the orders, the lane says what they will do: money left, whether food holds, raises or cuts satisfaction, people per mine with a warning below ten, and whether the colony will grow, hold or shrink. The listing gave none of this; the challenge becomes planning against the market, not guessing thresholds.
 - **Food by the head.** The listing asked for a total and compared it per head; the lane asks per head directly.

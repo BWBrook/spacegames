@@ -15,6 +15,8 @@ The intro says "presing Ato increase it and D to decrease it". The listing tests
 
 A negative `INKEY` scans one key by its internal number, and in the BBC's key table −51 is D and −66 is A. So D raises the thrust and A lowers it, the reverse of the instructions. A player who follows the intro presses A for more thrust, gets less, and makes a new crater; eases off with D, gets more, and is lost in space.
 
+The book's printed BBC version tests `INKEY(-194)` and `INKEY(-179)`, which are A's and D's codes less 128. On OS 1.20 those numbers scan the keyboard from that key upward instead of testing the key, so on a real BBC the printed game raises the thrust on D and has nothing to lower it. The disk's keys look like a repair of that, paired the opposite way to the intro. See `docs/05-book-vs-disk.md`.
+
 ## What the physics allows
 Each pass, a held key moves the thrust by 4, gravity adds 0.41 to 0.80 to the velocity, thrust removes a twentieth of itself, and the fuel falls by a tenth of the thrust. Two rules shape everything:
 
@@ -27,7 +29,7 @@ So the skill is timing, not effort. An instinctive pilot who fights the fall fro
 - **`*FX12,1` and the per-pass flush do nothing useful.** Line 30 sets the fastest possible keyboard auto-repeat and line 530 empties the keyboard buffer every pass, but negative `INKEY` reads the key directly and never looks at the buffer. The only effect is on what might spill into BASIC after the program ends.
 - **The craft flickers.** Each pass draws the lander in white and later erases it in black before moving it. The retro lane draws it steadily instead, the one deliberate deviation.
 - **Getting lost is easy.** You start at the ceiling, so any upward drift near the top loses you. Holding the thrust key from the start does it within a few seconds.
-- **The intro has typos:** "presing Ato" and "allthe", which MODE 7 wraps as "a" / "llthe time".
+- **The disk's intro has typos:** "presing Ato" and "allthe", which MODE 7 wraps as "a" / "llthe time". The book's printed intro has neither.
 
 ## Retro BASIC Lane
 It opens with the intro page from `13.bas`, wrapped at 40 columns as MODE 7 wraps it, because that page is the only place the controls are explained. The game then runs on a small MODE 5 emulation in `mode5.ts`: a 160 by 256 four-colour pixel buffer addressed in BASIC's 1280 by 1024 logical coordinates, with its own line drawing and filled bars, scaled up with hard edges, and text on the 20-column grid. It reproduces the jagged ground, the labels and gravity reading, the four bars and their colour warnings, the lander outline, D for more thrust and A for less, the fuel ceiling, both endings, and the "LANDED / AT VEL / SAFELY" or "ALL DEAD" panel. A pass takes a tenth of a second, from a statement count at the shared BBC speed.

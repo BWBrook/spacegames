@@ -20,9 +20,9 @@ The consequence is that **correct physics loses**. A player who wants 100 years 
 Over 44,000 random targets and speeds, answers that are correct in reality are accepted by the listing 26.6 per cent of the time, all of them at speeds low enough that dilation hardly matters.
 
 ## Quirks
-- **Both ends of the offered range crash.** The prompt says `SPEED OF SHIP (0-1)` and line 90 accepts both endpoints. A speed of 0 stops the program with `Division by zero at line 120`; a speed of 1 with `Division by zero at line 130`. So does a blank line, which BBC `INPUT` reads as 0.
+- **On the disk, both ends of the offered range crash.** The prompt says `SPEED OF SHIP (0-1)` and the disk's line 90 accepts both endpoints. The book's line 90 rejects them with `V>=1 OR V<=0`; the disk dropped both `=` signs. A speed of 0 stops the program with `Division by zero at line 120`; a speed of 1 with `Division by zero at line 130`. So does a blank line, which BBC `INPUT` reads as 0.
 - **Thirty of the hundred targets need no relativity at all.** Any target up to 54 can be reached by travelling slowly and spending under 50 years aboard. Only above that does the game ask for anything relativistic.
-- **Exactly 5 years out gets no verdict.** Lines 180 and 190 test for less than 5 and more than 5, so a miss of exactly 5 prints nothing. In binary floating point the arithmetic almost never lands exactly, so it is latent rather than reachable.
+- **On the disk, exactly 5 years out gets no verdict.** Lines 180 and 190 test for less than 5 and more than 5, so a miss of exactly 5 prints nothing. The book's line 180 tests `<=5`. In binary floating point the arithmetic almost never lands exactly, so it is latent rather than reachable.
 - **One attempt.** The listing ends after a single trip. Without a calculator, finding a speed whose dilation factor is right is guesswork.
 
 ## Retro BASIC Lane

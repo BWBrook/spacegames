@@ -128,7 +128,7 @@ In all, 730 landing moves divide by zero on the disk and 32 in the book.
 
 **What it affects.**
 
-- **Retro lane:** follows the disk's rule, but guards line 220 against a zero velocity and prints `GOOD LANDING.` where the disk stops with the error. See the side findings.
+- **Retro lane:** follows the disk's rule. It used to guard line 220 against a zero velocity and print `GOOD LANDING.` where the disk stops with the error; that is now fixed. See the side findings.
 - **Field note on ascending landings:** a congratulated ascending landing is almost entirely a product of the disk's line 205. Under the book's rule it needs the craft to be rising already at the start of its final turn, which is true of 16 of the book's 31 good landings. The note's "just under a third" does not match an exhaustive count under any measure tried. Moves, positions ignoring fuel and distinct speeds all put the disk's share at about 99 per cent. The measure behind the note is not recorded.
 - **Field note on the exact-arrival quirk:** in the book every landing uses the start-of-turn values, so the crash at 35.7 is the book's ordinary rule, not an exception. Both versions score that flight 35.7.
 - **Field note, "It cannot happen on the path that reaches that line":** false for both versions.
@@ -149,7 +149,7 @@ The book's substitutions (page 26) tell BBC owners to change `RND` to `RND(1)` o
 
 **What it affects.**
 
-- **Retro lane:** keeps the disk's growth freeze and halt faithfully, but prints the wrong error.
+- **Retro lane:** keeps the disk's growth freeze and halt faithfully. It used to print the wrong error; that is now fixed.
 - **Field notes:** "Being a good leader is fatal", production and population that can never rise, and the unreachable glut all come from the disk's typo, not from the book. `THERRE ARE` is the disk's alone.
 
 ## Trip Into The Future: the speed test
@@ -234,9 +234,9 @@ Everything else in the thirteen reconstructed listings is documented BBC BASIC. 
 
 These turned up while checking the disk's own behaviour. None is a difference from the book.
 
-- **Space Mines stops with the wrong error.** The disk stops with `No such variable at line 500`, not `Missing ) at line 500`, for the reason given under Space Mines. The retro lane's error text, `docs/space-mines.md` and the field notes all need correcting.
-- **Moonlander can divide by zero on the disk.** Burns `0 0 0 0 0 6 30 29 27 8` stop the disk with `Division by zero at line 220`, confirmed in jsbeeb. `touchdownVelocity` in `src/games/moonlander/state.ts` returns 0 for a zero velocity, so the retro lane prints `GOOD LANDING.` instead. Its comment, and the field notes, say the case cannot arise.
-- **Empty loops may run faster than the lanes assume.** In jsbeeb, BBC BASIC II runs an empty `FOR` loop at about 0.65 ms per iteration whether `FOR` and `NEXT` share a line or not: 1200 iterations took 78 centiseconds and 2000 took 130. `bbcTiming.ts` assumes 1 ms, so every retro lane's empty-loop pause runs about half as long again as on a BBC, and Death Valley's and Touchdown's flat-out pacing is built on the same constant. This is an emulator measurement. The constant was originally set by reasoning about play, so whether to change it is a separate decision.
+- **Space Mines stopped with the wrong error.** The disk stops with `No such variable at line 500`, not `Missing ) at line 500`, for the reason given under Space Mines. Fixed: the retro lane now prints the disk's error, and `docs/space-mines.md` and the field notes are corrected.
+- **Moonlander can divide by zero on the disk.** Burns `0 0 0 0 0 6 30 29 27 8` stop the disk with `Division by zero at line 220`, confirmed in jsbeeb. The retro lane used to guard the division and print `GOOD LANDING.`. Fixed: it now stops with the disk's error, and the notes no longer say the case cannot arise.
+- **Empty loops may run faster than the lanes assume.** In jsbeeb, BBC BASIC II runs an empty `FOR` loop at about 0.65 ms per iteration whether `FOR` and `NEXT` share a line or not: 1200 iterations took 78 centiseconds and 2000 took 130. `bbcTiming.ts` assumes 1 ms, so every retro lane's empty-loop pause runs about half as long again as on a BBC, and Death Valley's and Touchdown's flat-out pacing is built on the same constant. This is an emulator measurement. The constant was originally set by reasoning about play, so whether to change it is a separate decision. A fuller measurement since, including Death Valley's rows and Touchdown's passes, is in the revisit log.
 
 ---
 
@@ -250,6 +250,8 @@ Keep the disk as the retro lanes' canon, as `docs/01-dual-lane-anthology.md` alr
 - Switching would change ten lanes and void verified analyses in the field notes, Moonlander's especially.
 
 Whichever option is chosen, fix the two lanes that are not faithful to the disk (see the side findings), and revise the field-note claims listed above so that each quirk is attributed correctly to the book or the disk.
+
+**Outcome.** On 28 September 2026 Barry approved the follow-up on the basis of keeping the disk. Both lanes are fixed, and the field notes and design documents now attribute each quirk to the book or the disk. The loop-speed question is being measured in jsbeeb for his decision.
 
 **Lanes each option would change.**
 
