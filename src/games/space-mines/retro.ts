@@ -127,9 +127,11 @@ export const createRetroGame: RetroFactory = ({ stage, manifest }) => {
   function endOfYear() {
     if (v.S < MINES_RULES.revoltBelow) return finish('THE PEOPLE REVOLTED');
     // Line 500 reads CE=CE+INT(RND81)*20+1): the opening bracket is Shift-8 on
-    // a BBC keyboard, and the Shift was missed. It only runs, and so only
-    // fails, once satisfaction is above 1.1.
-    if (v.S > MINES_RULES.growthAbove) return finish('', 'Missing ) at line 500');
+    // a BBC keyboard, and the Shift was missed. BASIC tokenises RND only when
+    // no letter or digit follows, so the disk stores RND81 as a variable name
+    // that was never set. It only runs, and so only fails, once satisfaction
+    // is above 1.1.
+    if (v.S > MINES_RULES.growthAbove) return finish('', 'No such variable at line 500');
     if (v.S < MINES_RULES.declineBelow) v.CE -= rollSmallChange(Math.random, 20);
     if (v.L === 0) return finish('', 'Division by zero at line 520');
     if (v.P / v.L < MINES_RULES.peoplePerMine) return finish("YOU'VE OVERWORKED EVERYONE");

@@ -21,14 +21,20 @@ export const VERDICT_TEXT: Record<LandingVerdict, string> = {
   good: 'GOOD LANDING.',
 };
 
-/**
- * Line 220: V1 = V + (5-B)*H/V, a linear step back to the moment height hit
- * zero. The original would divide by zero if velocity were zero there, which
- * it cannot be on the path that reaches this line; we guard anyway.
- */
+/** Line 220: V1 = V + (5-B)*H/V, a linear step back to the moment height hit zero. */
 export function touchdownVelocity(velocity: number, burn: number, height: number) {
-  if (velocity === 0) return 0;
   return velocity + (MOONLANDER_RULES.gravity - burn) * height / velocity;
+}
+
+/**
+ * Lines 220-250. Line 220 divides by the velocity it is handed, and a final
+ * burn can leave that at exactly zero: burns 0 0 0 0 0 6 30 29 27 8 end below
+ * the surface at rest. The BBC then stops with an error, and so does this.
+ */
+function land(velocity: number, burn: number, height: number): TurnResult {
+  if (velocity === 0) return { landed: true, burn, error: 'Division by zero at line 220' };
+  const touchdown = touchdownVelocity(velocity, burn, height);
+  return { landed: true, burn, touchdown, verdict: verdictFor(touchdown) };
 }
 
 export function clampBurn(input: number, fuel: number) {
@@ -48,7 +54,8 @@ export interface FlightSnapshot {
 
 export type TurnResult =
   | { landed: false; next: FlightSnapshot; burn: number }
-  | { landed: true; burn: number; touchdown: number; verdict: LandingVerdict };
+  | { landed: true; burn: number; touchdown: number; verdict: LandingVerdict }
+  | { landed: true; burn: number; error: string };
 
 /** One pass of lines 120-210, including the exact-arrival branch at line 170. */
 export function applyTurn(current: FlightSnapshot, burnInput: number): TurnResult {
@@ -57,16 +64,10 @@ export function applyTurn(current: FlightSnapshot, burnInput: number): TurnResul
   const fuel = current.fuel - burn;
   const fall = (newVelocity + current.velocity) / 2;
 
-  if (fall === current.height) {
-    const touchdown = touchdownVelocity(current.velocity, burn, current.height);
-    return { landed: true, burn, touchdown, verdict: verdictFor(touchdown) };
-  }
+  if (fall === current.height) return land(current.velocity, burn, current.height);
 
   const height = current.height - fall;
-  if (height < 0) {
-    const touchdown = touchdownVelocity(newVelocity, burn, height);
-    return { landed: true, burn, touchdown, verdict: verdictFor(touchdown) };
-  }
+  if (height < 0) return land(newVelocity, burn, height);
 
   return {
     landed: false,

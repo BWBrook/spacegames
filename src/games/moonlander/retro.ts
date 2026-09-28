@@ -98,7 +98,7 @@ export const createRetroGame: RetroFactory = ({ stage, manifest }) => {
     const result = applyTurn(state.flight, burnInput);
     if (result.landed) {
       terminal.pushLine('');
-      terminal.pushLine(VERDICT_TEXT[result.verdict]);
+      terminal.pushLine('error' in result ? result.error : VERDICT_TEXT[result.verdict]);
       terminal.pushLine('');
       terminal.pushLine('R OR ENTER TO FLY AGAIN');
       state.done = true;
